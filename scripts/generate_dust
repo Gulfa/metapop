@@ -1,0 +1,7 @@
+#!/usr/bin/env Rscript
+
+withr::with_options(
+  list(odin.no_check_naked_index = TRUE),
+  withr::with_collate(
+    "C",
+    odin.dust::odin_dust_package(here::here())))
