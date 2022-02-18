@@ -9,7 +9,7 @@ basic_params <- function(N=5, n_vac=2, L=100, n_strain=1){
     vaccinations=array(0,dim=c(L, N, n_vac)),
                                         #    import_vec=rep(0, L),
                                         #    import_age_prio=rep(1,dim=(N,n_vac,1)),
-    beta_day=matrix(0.05, ncol=N, nrow=L),
+    beta_day=matrix(0.01, ncol=N, nrow=L),
                                         #    vac_time_full_effect=array(14.0, N),
     mixing_matrix=matrix(1.0, nrow=N, ncol=N),
     migration_matrix=matrix(0.0, nrow=N, ncol=N),
@@ -20,7 +20,7 @@ basic_params <- function(N=5, n_vac=2, L=100, n_strain=1){
     import_vec=array(0,dim=c(L,N,n_vac,n_strain)),
     length_hosp=array(4,dim=c(N,n_vac,n_strain)),
     length_icu=array(15,dim=c(N,n_vac,n_strain)),
-    hosp_prob=array(0.1, dim=c(N,n_vac,n_strain)),
+    hosp_prob=array(0.01, dim=c(N,n_vac,n_strain)),
     icu_prob=array(0.5, dim=c(N,n_vac,n_strain)),
     pre_icu=array(2,dim=c(N,n_vac,n_strain)),
     post_icu=array(2,dim=c(N,n_vac,n_strain)),
@@ -72,10 +72,17 @@ basic_params <- function(N=5, n_vac=2, L=100, n_strain=1){
     reg_pop_long=rep(1e5,N),
     waning_inf=1e10,
     N_regions=1,
-    age_groups=N
+    rand_beta_sd=0.1,
+    rand_beta=0,
+    threshold_beta=0,
+    rand_beta_factors=rep(0.05,N),
+    age_groups=N,
+    change_factor=c(0,0),
+    threshold=c(100)
 
   )
 }
+
 
 test_that("Conserve N", {
   results <- run_params(basic_params(), L=100, 3, 3)
@@ -83,7 +90,19 @@ test_that("Conserve N", {
   expect_true(N_t)
 })
 
-
+test_that("Random beta", {
+  params <- basic_params()
+  params$rand_beta <- 1
+  results1 <- run_params(params, L=100, 6, 3)
+  N_t <- all(results1 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(basic_params()$S_ini) + sum(basic_params()$I_ini))
+  expect_true(N_t)
+  params$rand_beta <- 0.4
+  results2 <- run_params(params, L=100, 3, 3)
+  tmp <- results1[, .(peak=max(get("I[1]"))), by=sim]
+  tmp2 <- results2[, .(peak=max(get("I[1]"))), by=sim]
+  expect_gte(max(tmp2) - min(tmp2), max(tmp) - max(tmp))
+}
+)
 test_that("Test vaccinaion implemenation", {
   results_no_vax <- run_params(basic_params(), L=100, 3, 3)
   params <- basic_params()
@@ -135,7 +154,7 @@ test_that("Test import", {
 test_that("Test Waning infection", {
   params <- basic_params(n_vac=1, L=300)
   params$waning_inf <- 100
-
+  params$beta_day=matrix(0.05, ncol=5, nrow=300)
   results <- run_params(params, L=300, 3, 3)
   # Crude test for two peaks
   expect_gte(  max(results[t <150, get("I[5]")]), 5000)
@@ -154,6 +173,24 @@ test_that("Test 2 strains", {
   N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
   expect_true(N_t)
   expect_gte(mean(results[time==100,get("tot_infected[6]")]), mean(results[time==100,get("tot_infected[1]")]))
+  
+})
+
+
+
+test_that("Test dynamic threshold", {
+  params <- basic_params(n_vac=5)
+  params$threshold_beta <- 1
+  params$threshold <- c(500)
+  params$threshold_ini <- 0.009
+  params$threshold_max <- 0.009
+  params$threshold_min <- 0.001
+  params$rand_beta_factors <- rep(1,5)
+  params$change_factor <- c(0.8, 1000)
+  results <- run_params(params, L=500, 3, 3)
+  N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
+  expect_true(N_t)
+  expect_gte(1000, max(results[, hosp]))
   
 })
 
