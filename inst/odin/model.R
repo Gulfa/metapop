@@ -22,17 +22,20 @@ import_vec[,,,] <- user()
 current_tot_in_hosp <- sum(H[,,]) + sum(ICU_H[,,]) + sum(ICU_R[,,]) + sum(ICU_P[,,])
 new_tot_in_hosp <- sum(H[,,]) + sum(ICU_H[,,]) + sum(ICU_R[,,]) + sum(ICU_P[,,]) + sum(n_IH[,,])  - sum(n_H[,,])  +sum(n_IICU[,,]) -sum(n_ICU_P[,,])
 
-r <- current_tot_in_hosp - threshold[1]
-dr_dt <- (new_tot_in_hosp - current_tot_in_hosp)/dt
+r <-  threshold[1]- current_tot_in_hosp
+dr_dt <- (current_tot_in_hosp-new_tot_in_hosp )/dt
 
-new_beta_thresh <- beta_thresh +0.1/threshold[1]*( -change_factor[1]*r + -change_factor[2]/abs(r + 10)*dr_dt)
+new_beta_thresh <- 1/threshold[1]*(change_factor[1]*r + change_factor[2]*e_int +  change_factor[3]*dr_dt)
 
 threshold_beta <- user(0)
 dim(threshold) <- 1
 threshold[] <- user(100)
 change_factor[] <- user(1)
-dim(change_factor) <- 2
+dim(change_factor) <- 3
 beta[] <- if(rand_beta==1) exp(log_beta)*rand_beta_factors[i] else (if (threshold_beta==1) beta_thresh*rand_beta_factors[i] else beta_day[step,i])
+
+initial(e_int) <- 0
+update(e_int) <- e_int + r*dt
 
 
 dim(beta) <- c(n)
