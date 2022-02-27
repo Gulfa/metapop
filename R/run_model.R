@@ -39,8 +39,9 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
 
   if(estimate_Rt){
     Rts <- parallel::mclapply(unique(results$sim), function(x) estimate_Rt_large_new(results%>%dplyr::filter(sim==x), params, params$beta_day), mc.cores=N_threads)
-    results <- results %>% dplyr::mutate(Rt=unlist(Rts), name=run_name) %>% dplyr::mutate(!!!run_params)
+    results <- results %>% dplyr::mutate(Rt=unlist(Rts))
   }
+  results <- results  %>% dplyr::mutate(name=run_name) %>% dplyr::mutate(!!!run_params)
   return(results)
 }
 
