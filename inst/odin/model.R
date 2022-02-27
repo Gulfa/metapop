@@ -22,21 +22,41 @@ import_vec[,,,] <- user()
 current_tot_in_hosp <- sum(H[,,]) + sum(ICU_H[,,]) + sum(ICU_R[,,]) + sum(ICU_P[,,])
 new_tot_in_hosp <- sum(H[,,]) + sum(ICU_H[,,]) + sum(ICU_R[,,]) + sum(ICU_P[,,]) + sum(n_IH[,,])  - sum(n_H[,,])  +sum(n_IICU[,,]) -sum(n_ICU_P[,,])
 
-r <-  threshold[1]- current_tot_in_hosp
-dr_dt <- (current_tot_in_hosp-new_tot_in_hosp )/dt
+current_infected <- sum(I[,,])
+new_infected <- sum(I[,,]) + sum(n_PI[,,]) - sum(n_I[,,])
 
-new_beta_thresh <- 1/threshold[1]*(change_factor[1]*r + change_factor[2]*e_int +  change_factor[3]*dr_dt)
+r <-  threshold[1]- current_tot_in_hosp
+dr_dt <- (current_tot_in_hosp - new_tot_in_hosp)/dt
+
+
+update(trigger) <- if(current_tot_in_hosp >threshold[2]) 1 else trigger
+
+new_beta_thresh <- if(trigger == 1) change_factor[1] + 1/threshold[1]*(change_factor[2]*r + change_factor[3]*e_int +  change_factor[4]*(dr_dt)) else beta_thresh
 
 threshold_beta <- user(0)
-dim(threshold) <- 1
+dim(threshold) <- 2
 threshold[] <- user(100)
 change_factor[] <- user(1)
-dim(change_factor) <- 3
-beta[] <- if(rand_beta==1) exp(log_beta)*rand_beta_factors[i] else (if (threshold_beta==1) beta_thresh*rand_beta_factors[i] else beta_day[step,i])
+dim(change_factor) <- 4
 
+initial(beta_dyn_change) <- dyn_change[1]
+update(beta_dyn_change) <- dyn_change[1]*(1-dyn_change[2]*(dyn_change[3] + (sum(I[,,]) + sum(P[,,]) + sum(A[,,]))/sum(beta_norm[])))
+dim(dyn_change) <- 3
+dyn_change[] <- user(0)
+
+beta_cp <- if(peak_trigger==0) beta_cut_peak_param[1] else beta_cut_peak_param[2]
+dim(beta_cut_peak_param) <- 3
+beta_cut_peak_param[] <- user(0)
+
+beta[] <- if(rand_beta==1) exp(log_beta)*rand_beta_factors[i] else (if (threshold_beta==1) beta_thresh*rand_beta_factors[i] else (if(beta_dynamic_change==1) beta_dyn_change*rand_beta_factors[i] else (if (beta_cut_peak==1) beta_cp*rand_beta_factors[i] else beta_day[step,i])))
+
+beta_dynamic_change <- user(0)
+beta_cut_peak <- user(0)
+initial(trigger) <- 0
+initial(peak_trigger) <- 0
 initial(e_int) <- 0
 update(e_int) <- e_int + r*dt
-
+update(peak_trigger) <- if(time>20 && current_infected > beta_cut_peak_param[3] && new_infected < current_infected) 1 else peak_trigger
 
 dim(beta) <- c(n)
 dim(beta_day) <- c(N_steps, n)
@@ -73,13 +93,8 @@ update(B_D_H[,,]) <- B_D_H[i,j,k] + n_HD[i,j,k] - n_B_H_D[i,j,k]
 
 update(B_D_ICU[,,]) <- B_D_ICU[i,j,k] + n_ICU_D[i,j,k] - n_B_ICU_D[i,j,k]
 
-#update(PRE_MISC[]) <- PRE_MISC[i] + n_I_PRE_MISC[i] - n_PRE_MISC[i]
-#update(MISC[]) <- MISC[i] + n_PRE_MISC_H[i] - n_MISCR[i]
 
-#update(MISC_ICU_H[]) <- MISC_ICU_H[i] + n_PRE_MISC_ICU_H[i] - n_MISC_ICU[i]
-#update(MISC_ICU[]) <- MISC_ICU[i] + n_MISC_ICU[i] - n_MISC_ICU_R[i]
-
-update(R[,,]) <-  R[i,j,k] + n_AR[i,j,k] + n_IR[i,j,k]  + n_ICU_R[i,j,k] + n_HR[i,j,k] - n_RI[i,j,k]- n_RS[i,j,k] #+ dt*(sum(mig_R[i,])- R[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i])) + n_MISCR[i]- n_I_PRE_MISC[i] + n_I_imp[i]
+update(R[,,]) <-  R[i,j,k] + n_AR[i,j,k] + n_IR[i,j,k]  + n_ICU_R[i,j,k] + n_HR[i,j,k] - n_RS[i,j,k] - n_RI[i,j,k]#+ dt*(sum(mig_R[i,])- R[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i])) + n_MISCR[i]- n_I_PRE_MISC[i] + n_I_imp[i]
 
 update(D[,,]) <- D[i,j,k] + n_B_D_D[i,j,k] + n_B_H_D[i,j,k] + n_B_ICU_D[i,j,k]
 
@@ -285,8 +300,11 @@ update(tot_N) <- sum(N[,])
 
                                         # Transitions
 
-lambda_ij[,,,,] <- beta[i]*beta_strain[i5] * mixing_matrix[i,k]/beta_norm[i]*susceptibility[i,j,i5]*transmisibility[k,l,i5]*(pre_sympt_infect*P[k,l,i5] + symp_trans[k,l,i5]*(I[k,l,i5] ) + asympt_infect*A[k,l,i5]) #I_imp[j]
-  
+lambda_ij[,,,,] <- beta[i]*beta_strain[i5] * mixing_matrix[i,k]/beta_norm[i]*transmisibility[k,l,i5]*(pre_sympt_infect*P[k,l,i5] + symp_trans[k,l,i5]*(I[k,l,i5] ) + asympt_infect*A[k,l,i5]) #I_imp[j]*susceptibility[i,j,i5]
+
+#initial(lambda[,,,,]) <- 0
+#update(lambda[,,,,]) <- lambda_ij[i,j,k,l,i5]
+#dim(lambda) <-  c(n, n_vac, n, n_vac, n_strain)
 #output(lambda_ij) <- TRUE
 
 ## # Migrations

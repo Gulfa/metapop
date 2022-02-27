@@ -1,3 +1,19 @@
+
+add_per_n <- function(res, key, params){
+
+  n_list <- seq(1, params$n*params$n_vac*params$n_strain,by=params$n)
+  for(i in 0:(params$n-1)){
+    vals <- res[, paste0(key, "[",n_list+i,"]")]
+    if(!is.null(dim(vals))){
+      vals <- rowSums(vals)
+    }
+    res <- cbind(res, vals)
+    colnames(res)[ncol(res)] <- paste0(key, "_", i+1)
+  }
+  return(res)
+}
+
+
 refine_results_odin <- function(res, params){
   d <- res
                                         #  res <- data.table(res)
@@ -11,48 +27,11 @@ refine_results_odin <- function(res, params){
 #  res <- cbind(res, tot_imp=rowSums(res[, paste0("tot_imp[",1:n,"]")]))
  # non_vac_list <- 1:(N_reg*N_age)
   age_list <- seq(1, params$n*params$n_vac*params$n_strain,by=params$n)
-  res <- cbind(res, tot_infected_1=rowSums(res[, paste0("tot_infected[",age_list,"]")]))
-  res <- cbind(res, tot_infected_2=rowSums(res[, paste0("tot_infected[",age_list+1,"]")]))
-  res <- cbind(res, tot_infected_3=rowSums(res[, paste0("tot_infected[",age_list+2,"]")]))
-  res <- cbind(res, tot_infected_4=rowSums(res[, paste0("tot_infected[",age_list+3,"]")]))
-  res <- cbind(res, tot_infected_5=rowSums(res[, paste0("tot_infected[",age_list+4,"]")]))
-  res <- cbind(res, tot_infected_6=rowSums(res[, paste0("tot_infected[",age_list+5,"]")]))
-  res <- cbind(res, tot_infected_7=rowSums(res[, paste0("tot_infected[",age_list+6,"]")]))
-  res <- cbind(res, tot_infected_8=rowSums(res[, paste0("tot_infected[",age_list+7,"]")]))
-  res <- cbind(res, tot_infected_9=rowSums(res[, paste0("tot_infected[",age_list+8,"]")]))
 
-  res <- cbind(res, tot_hosp_1=rowSums(res[, paste0("tot_hosp[",age_list,"]")]))
-  res <- cbind(res, tot_hosp_2=rowSums(res[, paste0("tot_hosp[",age_list+1,"]")]))
-  res <- cbind(res, tot_hosp_3=rowSums(res[, paste0("tot_hosp[",age_list+2,"]")]))
-  res <- cbind(res, tot_hosp_4=rowSums(res[, paste0("tot_hosp[",age_list+3,"]")]))
-  res <- cbind(res, tot_hosp_5=rowSums(res[, paste0("tot_hosp[",age_list+4,"]")]))
-  res <- cbind(res, tot_hosp_6=rowSums(res[, paste0("tot_hosp[",age_list+5,"]")]))
-  res <- cbind(res, tot_hosp_7=rowSums(res[, paste0("tot_hosp[",age_list+6,"]")]))
-  res <- cbind(res, tot_hosp_8=rowSums(res[, paste0("tot_hosp[",age_list+7,"]")]))
-  res <- cbind(res, tot_hosp_9=rowSums(res[, paste0("tot_hosp[",age_list+8,"]")]))
-
-  res <- cbind(res, tot_resp_1=rowSums(res[, paste0("tot_resp[",age_list,"]")]))
-  res <- cbind(res, tot_resp_2=rowSums(res[, paste0("tot_resp[",age_list+1,"]")]))
-  res <- cbind(res, tot_resp_3=rowSums(res[, paste0("tot_resp[",age_list+2,"]")]))
-  res <- cbind(res, tot_resp_4=rowSums(res[, paste0("tot_resp[",age_list+3,"]")]))
-  res <- cbind(res, tot_resp_5=rowSums(res[, paste0("tot_resp[",age_list+4,"]")]))
-  res <- cbind(res, tot_resp_6=rowSums(res[, paste0("tot_resp[",age_list+5,"]")]))
-  res <- cbind(res, tot_resp_7=rowSums(res[, paste0("tot_resp[",age_list+6,"]")]))
-  res <- cbind(res, tot_resp_8=rowSums(res[, paste0("tot_resp[",age_list+7,"]")]))
-  res <- cbind(res, tot_resp_9=rowSums(res[, paste0("tot_resp[",age_list+8,"]")]))
-
-  
-  res <- cbind(res, D_1=rowSums(res[, paste0("D[",age_list,"]")]))
-  res <- cbind(res, D_2=rowSums(res[, paste0("D[",age_list+1,"]")]))
-  res <- cbind(res, D_3=rowSums(res[, paste0("D[",age_list+2,"]")]))
-  res <- cbind(res, D_4=rowSums(res[, paste0("D[",age_list+3,"]")]))
-  res <- cbind(res, D_5=rowSums(res[, paste0("D[",age_list+4,"]")]))
-  res <- cbind(res, D_6=rowSums(res[, paste0("D[",age_list+5,"]")]))
-  res <- cbind(res, D_7=rowSums(res[, paste0("D[",age_list+6,"]")]))
-  res <- cbind(res, D_8=rowSums(res[, paste0("D[",age_list+7,"]")]))
-  res <- cbind(res, D_9=rowSums(res[, paste0("D[",age_list+8,"]")]))
-
-  #res <- cbind(res, tot_S=rowSums(res[, paste0("S[",non_vac_list,"]")]))
+  res <- add_per_n(res, "tot_infected", params)
+  res <- add_per_n(res, "tot_resp", params)
+  res <- add_per_n(res, "tot_hosp", params)
+  res <- add_per_n(res, "D", params)
   
   
 #  res <- cbind(res, ICU_R=rowSums(res[, paste0("ICU_R[",1:n,"]")]))

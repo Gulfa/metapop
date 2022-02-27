@@ -4,7 +4,7 @@
 #' Run the metapopulation model with a set of parameters and a given number of particles and threads.
 #' The number of particles gives the number of samples and threads the number of cores used to sample
 
-run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1", run_params=list(), silent=TRUE){
+run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1", run_params=list(), silent=TRUE, estimate_Rt=FALSE){
   if(!silent){
     print(glue::glue("Running {run_name}"))
   }
@@ -36,10 +36,11 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
       
   }
 
-  
-  Rts <- parallel::mclapply(unique(results$sim), function(x) estimate_Rt_large_new(results%>%dplyr::filter(sim==x), params, params$beta_day), mc.cores=N_threads)
-  Rts <-lapply(unique(results$sim), function(x) estimate_Rt_large_new(results%>%dplyr::filter(sim==x), params, beta[[x]]))
-  results <- results %>% dplyr::mutate(Rt=unlist(Rts), name=run_name) %>% dplyr::mutate(!!!run_params)
+
+  if(estimate_Rt){
+    Rts <- parallel::mclapply(unique(results$sim), function(x) estimate_Rt_large_new(results%>%dplyr::filter(sim==x), params, params$beta_day), mc.cores=N_threads)
+    results <- results %>% dplyr::mutate(Rt=unlist(Rts), name=run_name) %>% dplyr::mutate(!!!run_params)
+  }
   return(results)
 }
 
