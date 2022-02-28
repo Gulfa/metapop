@@ -53,10 +53,12 @@ beta[] <- if(rand_beta==1) exp(log_beta)*rand_beta_factors[i] else (if (threshol
 beta_dynamic_change <- user(0)
 beta_cut_peak <- user(0)
 initial(trigger) <- 0
+initial(incidence_int) <- 0
+update(incidence_int) <- sum(n_SE[,,])
 initial(peak_trigger) <- 0
 initial(e_int) <- 0
 update(e_int) <- e_int + r*dt
-update(peak_trigger) <- if(time>20 && current_infected > beta_cut_peak_param[3] && new_infected < current_infected) 1 else peak_trigger
+update(peak_trigger) <- if(time>20 && current_infected > beta_cut_peak_param[3] && sum(n_SE[,,]) < incidence_int) 1 else peak_trigger
 
 dim(beta) <- c(n)
 dim(beta_day) <- c(N_steps, n)
