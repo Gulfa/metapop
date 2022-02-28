@@ -218,6 +218,23 @@ test_that("Test cut_peak", {
   
 })
 
+test_that("Test cut_peak + dynamic change", {
+  params <- basic_params(n_vac=1, n_strain=1, L=200)
+  params$beta_dynamic_change <- 1
+  params$dyn_change <- c(0.05, 0.5, 0.1,1)
+  params$rand_beta_factors <- rep(1,9)
+  results1 <- run_params(params, L=200, 3, 3)
+  params$beta_cut_peak <- 1
+  params$beta_cut_peak_param <- c(0.05, 0.05*0.2, 3000)
+  params$rand_beta_factors <- rep(1,9)
+  results2 <- run_params(params, L=200, 3, 3)
+  N_t <- all(results2 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
+  expect_true(N_t)
+  
+  expect_gte(mean(results1[t==200,get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+10000)
+  
+})
+
 
 test_that("Test dynamic change", {
   params <- basic_params(n_vac=1, n_strain=1, L=200)

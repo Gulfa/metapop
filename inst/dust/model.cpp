@@ -902,7 +902,7 @@ public:
       }
     }
     for (int i = 1; i <= shared->dim_beta; ++i) {
-      internal.beta[i - 1] = (shared->rand_beta == 1 ? std::exp(log_beta) * shared->rand_beta_factors[i - 1] : ((shared->threshold_beta == 1 ? beta_thresh * shared->rand_beta_factors[i - 1] : ((shared->beta_dynamic_change == 1 ? beta_dyn_change * shared->rand_beta_factors[i - 1] : ((shared->beta_cut_peak == 1 ? beta_cp * shared->rand_beta_factors[i - 1] : shared->beta_day[shared->dim_beta_day_1 * (i - 1) + step - 1])))))));
+      internal.beta[i - 1] = (shared->rand_beta == 1 ? std::exp(log_beta) * shared->rand_beta_factors[i - 1] : ((shared->threshold_beta == 1 ? beta_thresh * shared->rand_beta_factors[i - 1] : ((shared->beta_dynamic_change == 1 ? ((shared->beta_cut_peak == 1 ? ((peak_trigger == 1 ? beta_cp * shared->rand_beta_factors[i - 1] : beta_dyn_change * shared->rand_beta_factors[i - 1])) : beta_dyn_change * shared->rand_beta_factors[i - 1])) : ((shared->beta_cut_peak == 1 ? beta_cp * shared->rand_beta_factors[i - 1] : shared->beta_day[shared->dim_beta_day_1 * (i - 1) + step - 1])))))));
     }
     for (int i = 1; i <= shared->dim_n_AR_1; ++i) {
       for (int j = 1; j <= shared->dim_n_AR_2; ++j) {
