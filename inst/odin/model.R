@@ -40,8 +40,8 @@ change_factor[] <- user(1)
 dim(change_factor) <- 4
 
 initial(beta_dyn_change) <- dyn_change[1]
-update(beta_dyn_change) <- dyn_change[1]*(1-dyn_change[2]*(dyn_change[3] + (sum(I[,,]) + sum(P[,,]) + sum(A[,,]))/sum(beta_norm[])))
-dim(dyn_change) <- 3
+update(beta_dyn_change) <- dyn_change[1]*(1-dyn_change[2]*(dyn_change[3] + dyn_change[4]*(sum(I[,,]) + sum(P[,,]) + sum(A[,,]))/sum(beta_norm[])))
+dim(dyn_change) <- 4
 dyn_change[] <- user(0)
 
 beta_cp <- if(peak_trigger==0) beta_cut_peak_param[1] else beta_cut_peak_param[2]

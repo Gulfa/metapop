@@ -77,7 +77,7 @@ basic_params <- function(N=9, n_vac=2, L=100, n_strain=1){
     threshold_beta=0,
     rand_beta_factors=rep(0.05,N),
     beta_cut_peak_param=c(0,0,0),
-    dyn_change=c(0,0,0),
+    dyn_change=c(0,0,0,0),
     age_groups=N,
     change_factor=c(0,0,0,0),
     threshold=c(100,0)
@@ -175,7 +175,7 @@ test_that("Test Rt", {
   beta_1 <- fix_beta_large(params, params$S_ini, params$I_ini, 1, beta=params$beta_day[1,], use_eig=TRUE)
   params$beta_day=params$beta_day*beta_1
   params$dt <- 0.1
-  results <- run_params(params, L=500, 3, 3)
+  results <- run_params(params, L=500, 1, 1)
   inc <- results[, mean(get("incidence")), by=t]
 
   expect_lte(abs(inc[t==200, V1] - inc[t==400, V1]), 30)
@@ -224,7 +224,7 @@ test_that("Test dynamic change", {
 
   results1 <- run_params(params, L=200, 3, 3)
   params$beta_dynamic_change <- 1
-  params$dyn_change <- c(0.05, 0.5, 0.1)
+  params$dyn_change <- c(0.05, 0.5, 0.1,1)
   params$rand_beta_factors <- rep(1,9)
   results2 <- run_params(params, L=200, 3, 3)
   N_t <- all(results2 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
