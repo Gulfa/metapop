@@ -76,7 +76,7 @@ basic_params <- function(N=9, n_vac=2, L=100, n_strain=1){
     rand_beta=0,
     threshold_beta=0,
     rand_beta_factors=rep(0.05,N),
-    beta_cut_peak_param=c(0,0,0),
+    beta_cut_peak_param=c(0,0,0,0),
     dyn_change=c(0,0,0,0),
     age_groups=N,
     change_factor=c(0,0,0,0),
@@ -208,13 +208,19 @@ test_that("Test cut_peak", {
 
   results1 <- run_params(params, L=200, 3, 3)
   params$beta_cut_peak <- 1
-  params$beta_cut_peak_param <- c(0.03, 0.05*0.2, 3000)
+  params$beta_cut_peak_param <- c(0.05, 0.05*0.2, 3000,14)
   params$rand_beta_factors <- rep(1,9)
   results2 <- run_params(params, L=200, 3, 3)
+  
+  params$beta_cut_peak_param <- c(0.05, 0.05*0.2, 3000,6)
+  params$rand_beta_factors <- rep(1,9)
+  results3 <- run_params(params, L=200, 3, 3)
+  plot(results3[, mean(incidence), by=t])
   N_t <- all(results2 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
   expect_true(N_t)
   
-  expect_gte(mean(results1[t==200,get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+10000)
+  expect_gte(mean(results1[t==200, get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+10000)
+  expect_gte(mean(results3[t==200, get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+10000)
   
 })
 
@@ -225,7 +231,7 @@ test_that("Test cut_peak + dynamic change", {
   params$rand_beta_factors <- rep(1,9)
   results1 <- run_params(params, L=200, 3, 3)
   params$beta_cut_peak <- 1
-  params$beta_cut_peak_param <- c(0.05, 0.05*0.2, 3000)
+  params$beta_cut_peak_param <- c(0.05, 0.05*0.2, 3000,14)
   params$rand_beta_factors <- rep(1,9)
   results2 <- run_params(params, L=200, 3, 3)
   N_t <- all(results2 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
@@ -263,7 +269,6 @@ test_that("Test dynamic threshold", {
   params$rand_beta_factors <- rep(1,9)
   params$change_factor <- c(0,2.5, 0.03, 30)
   results <- run_params(params, L=500, 3, 3, estimate_Rt=FALSE)
-  plot(results[, mean(get("hosp")), by=t])
   N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
   expect_true(N_t)
 
