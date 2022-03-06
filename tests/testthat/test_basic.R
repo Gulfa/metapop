@@ -206,38 +206,49 @@ test_that("Test 2 strains", {
 test_that("Test cut_peak", {
   params <- basic_params(n_vac=1, n_strain=1, L=200)
 
+  beta_1 <- fix_beta_large(params, params$S_ini, params$I_ini, 1, beta=params$beta_day[1,], use_eig=TRUE)
+  bv <- 0.05*beta_1*2
+  params$beta_day <- params$beta_day*beta_1*2
   results1 <- run_params(params, L=200, 3, 3)
   params$beta_cut_peak <- 1
-  params$beta_cut_peak_param <- c(0.05, 0.05*0.2, 3000,14)
+  params$beta_cut_peak_param <- c(bv, bv*0.2, 0.5,14)
   params$rand_beta_factors <- rep(1,9)
   results2 <- run_params(params, L=200, 3, 3)
   
-  params$beta_cut_peak_param <- c(0.05, 0.05*0.2, 3000,6)
+  params$beta_cut_peak_param <- c(bv, bv*0.2, 0.5,21)
   params$rand_beta_factors <- rep(1,9)
   results3 <- run_params(params, L=200, 3, 3)
-  plot(results3[, mean(incidence), by=t])
+  
+  ## plot(results1[, mean(tot_infected), by=t])
+  ## lines(results2[, mean(tot_infected), by=t], col="red")
+  ## lines(results3[, mean(tot_infected), by=t], col="blue")
+  
   N_t <- all(results2 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
   expect_true(N_t)
   
-  expect_gte(mean(results1[t==200, get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+10000)
-  expect_gte(mean(results3[t==200, get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+10000)
+  expect_gte(mean(results1[t==200, get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+100000)
+  expect_gte(mean(results2[t==200, get("tot_infected")]), mean(results3[t==200,get("tot_infected")])+50000)
   
 })
 
 test_that("Test cut_peak + dynamic change", {
   params <- basic_params(n_vac=1, n_strain=1, L=200)
+  beta_1 <- fix_beta_large(params, params$S_ini, params$I_ini, 1, beta=params$beta_day[1,], use_eig=TRUE)
+  bv <- 0.05*beta_1*2
+
   params$beta_dynamic_change <- 1
-  params$dyn_change <- c(0.05, 0.5, 0.1,1)
+  params$dyn_change <- c(bv, 0.5, 0.1,1)
   params$rand_beta_factors <- rep(1,9)
   results1 <- run_params(params, L=200, 3, 3)
   params$beta_cut_peak <- 1
-  params$beta_cut_peak_param <- c(0.05, 0.05*0.2, 3000,14)
+  
+  params$beta_cut_peak_param <- c(bv, bv*0.2, 1/2,14)
   params$rand_beta_factors <- rep(1,9)
   results2 <- run_params(params, L=200, 3, 3)
   N_t <- all(results2 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
   expect_true(N_t)
   
-  expect_gte(mean(results1[t==200,get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+10000)
+  expect_gte(mean(results1[t==200,get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+100000)
   
 })
 

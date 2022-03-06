@@ -864,7 +864,6 @@ public:
     const real_type time = state[0];
     const real_type trigger = state[2];
     const real_type beta_dyn_change = state[1];
-    const real_type incidence_int = state[3];
     const real_type e_int = state[5];
     const real_type peak_trigger = state[4];
     const real_type peak_timer = state[6];
@@ -893,9 +892,9 @@ public:
     state_next[6] = (peak_trigger == 0 ? 0 : peak_timer + shared->dt);
     state_next[0] = (step + 1) * shared->dt;
     real_type beta_cp = (peak_trigger == 1 && peak_timer < shared->beta_cut_peak_param[3] ? shared->beta_cut_peak_param[1] : shared->beta_cut_peak_param[0]);
-    real_type current_infected = odin_sum3<real_type>(I, 0, shared->dim_I_1, 0, shared->dim_I_2, 0, shared->dim_I_3, shared->dim_I_1, shared->dim_I_12);
     real_type current_tot_in_hosp = odin_sum3<real_type>(H, 0, shared->dim_H_1, 0, shared->dim_H_2, 0, shared->dim_H_3, shared->dim_H_1, shared->dim_H_12) + odin_sum3<real_type>(ICU_H, 0, shared->dim_ICU_H_1, 0, shared->dim_ICU_H_2, 0, shared->dim_ICU_H_3, shared->dim_ICU_H_1, shared->dim_ICU_H_12) + odin_sum3<real_type>(ICU_R, 0, shared->dim_ICU_R_1, 0, shared->dim_ICU_R_2, 0, shared->dim_ICU_R_3, shared->dim_ICU_R_1, shared->dim_ICU_R_12) + odin_sum3<real_type>(ICU_P, 0, shared->dim_ICU_P_1, 0, shared->dim_ICU_P_2, 0, shared->dim_ICU_P_3, shared->dim_ICU_P_1, shared->dim_ICU_P_12);
     state_next[1] = (shared->beta_cut_peak == 1 && peak_trigger == 1 && peak_timer < shared->beta_cut_peak_param[3] ? beta_cp : shared->dyn_change[0] * (1 - shared->dyn_change[1] * (shared->dyn_change[2] + shared->dyn_change[3] * (odin_sum3<real_type>(I, 0, shared->dim_I_1, 0, shared->dim_I_2, 0, shared->dim_I_3, shared->dim_I_1, shared->dim_I_12) + odin_sum3<real_type>(P, 0, shared->dim_P_1, 0, shared->dim_P_2, 0, shared->dim_P_3, shared->dim_P_1, shared->dim_P_12) + odin_sum3<real_type>(A, 0, shared->dim_A_1, 0, shared->dim_A_2, 0, shared->dim_A_3, shared->dim_A_1, shared->dim_A_12)) / (real_type) odin_sum1<real_type>(shared->beta_norm.data(), 0, shared->dim_beta_norm))));
+    state_next[4] = (odin_sum2<real_type>(S, 0, shared->dim_S_1, 0, shared->dim_S_2, shared->dim_S_1) / (real_type) odin_sum1<real_type>(shared->beta_norm.data(), 0, shared->dim_beta_norm) < shared->beta_cut_peak_param[2] ? 1 : 0);
     for (int i = 1; i <= shared->dim_N_1; ++i) {
       for (int j = 1; j <= shared->dim_N_2; ++j) {
         internal.N[i - 1 + shared->dim_N_1 * (j - 1)] = S[shared->dim_S_1 * (j - 1) + i - 1] + odin_sum3<real_type>(Ea, i - 1, i, j - 1, j, 0, shared->dim_Ea_3, shared->dim_Ea_1, shared->dim_Ea_12) + odin_sum3<real_type>(Es, i - 1, i, j - 1, j, 0, shared->dim_Es_3, shared->dim_Es_1, shared->dim_Es_12) + odin_sum3<real_type>(P, i - 1, i, j - 1, j, 0, shared->dim_P_3, shared->dim_P_1, shared->dim_P_12) + odin_sum3<real_type>(I, i - 1, i, j - 1, j, 0, shared->dim_I_3, shared->dim_I_1, shared->dim_I_12) + odin_sum3<real_type>(A, i - 1, i, j - 1, j, 0, shared->dim_A_3, shared->dim_A_1, shared->dim_A_12) + odin_sum3<real_type>(H, i - 1, i, j - 1, j, 0, shared->dim_H_3, shared->dim_H_1, shared->dim_H_12) + odin_sum3<real_type>(ICU_H, i - 1, i, j - 1, j, 0, shared->dim_ICU_H_3, shared->dim_ICU_H_1, shared->dim_ICU_H_12) + odin_sum3<real_type>(ICU_R, i - 1, i, j - 1, j, 0, shared->dim_ICU_R_3, shared->dim_ICU_R_1, shared->dim_ICU_R_12) + odin_sum3<real_type>(ICU_P, i - 1, i, j - 1, j, 0, shared->dim_ICU_P_3, shared->dim_ICU_P_1, shared->dim_ICU_P_12) + odin_sum3<real_type>(B_D, i - 1, i, j - 1, j, 0, shared->dim_B_D_3, shared->dim_B_D_1, shared->dim_B_D_12) + odin_sum3<real_type>(B_D_ICU, i - 1, i, j - 1, j, 0, shared->dim_B_D_ICU_3, shared->dim_B_D_ICU_1, shared->dim_B_D_ICU_12) + odin_sum3<real_type>(B_D_H, i - 1, i, j - 1, j, 0, shared->dim_B_D_H_3, shared->dim_B_D_H_1, shared->dim_B_D_H_12) + odin_sum3<real_type>(R, i - 1, i, j - 1, j, 0, shared->dim_R_3, shared->dim_R_1, shared->dim_R_12) + odin_sum3<real_type>(D, i - 1, i, j - 1, j, 0, shared->dim_D_3, shared->dim_D_1, shared->dim_D_12);
@@ -1260,7 +1259,6 @@ public:
       }
     }
     state_next[3] = odin_sum3<real_type>(internal.n_SE.data(), 0, shared->dim_n_SE_1, 0, shared->dim_n_SE_2, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12);
-    state_next[4] = (time > 20 && current_infected > shared->beta_cut_peak_param[2] && odin_sum3<real_type>(internal.n_SE.data(), 0, shared->dim_n_SE_1, 0, shared->dim_n_SE_2, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) < incidence_int ? 1 : peak_trigger);
     for (int i = 1; i <= shared->dim_tot_infected_1; ++i) {
       for (int j = 1; j <= shared->dim_tot_infected_2; ++j) {
         for (int k = 1; k <= shared->dim_tot_infected_3; ++k) {

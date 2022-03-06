@@ -58,7 +58,7 @@ update(incidence_int) <- sum(n_SE[,,])
 initial(peak_trigger) <- 0
 initial(e_int) <- 0
 update(e_int) <- e_int + r*dt
-update(peak_trigger) <- if(time>20 && current_infected > beta_cut_peak_param[3] && sum(n_SE[,,]) < incidence_int) 1 else peak_trigger
+update(peak_trigger) <- if(sum(S[,])/sum(beta_norm[])< beta_cut_peak_param[3]) 1 else 0#if(time>20 && current_infected > beta_cut_peak_param[3] && sum(n_SE[,,]) < incidence_int) 1 else peak_trigger
 initial(peak_timer) <- 0
 update(peak_timer) <- if(peak_trigger==0) 0 else peak_timer + dt
 
