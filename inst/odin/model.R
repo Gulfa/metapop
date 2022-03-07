@@ -44,7 +44,8 @@ update(beta_dyn_change) <- if(beta_cut_peak==1 && peak_trigger==1 && peak_timer 
 dim(dyn_change) <- 4
 dyn_change[] <- user(0)
 
-beta_cp <- if(peak_trigger==1 && peak_timer < beta_cut_peak_param[4]) beta_cut_peak_param[2] else beta_cut_peak_param[1] 
+initial(beta_cp) <-  beta_cut_peak_param[1] 
+update(beta_cp) <- if(peak_trigger==1 && peak_timer < beta_cut_peak_param[4]) beta_cut_peak_param[2] else beta_cut_peak_param[1] 
 dim(beta_cut_peak_param) <- 4
 beta_cut_peak_param[] <- user(0)
 
