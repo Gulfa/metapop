@@ -20,4 +20,29 @@ fix_params <- function(params, N, n_vac, n_strain, vac_pars){
   params$prob_death_icu <- array(outer(params$prob_death_icu, vac_pars$rr_death), dim=c(N, n_vac, n_strain))
   return(params)
 }
+
+
+change_dt <- function(params, dt){
+
+  params$dt <- dt
+  steps_per_day <- 1/dt
+  params$N_steps <- params$N_steps/dt
+  #Fix Beta
+  rows <- 1:nrow(params$beta_day)
+  params$beta_day <- params$beta_day[rep(rows, each=steps_per_day),]
+
+  ## Fix import_vec
+  imp_vec <- params$import_vec
+  imp_vec <- abind(imp_vec, array(0, dim=c(1, dim(imp_vec)[2:4])), along=1)
+  rows <- c()
+  for(i in 1:(dim(imp_vec)[1]-1)){
+    rows <- c(rows, c(i, rep(dim(imp_vec)[1], steps_per_day-1)))
+  }
+  params$import_vec <- imp_vec[rows,,,]
+  dim(params$import_vec) <- c(dim(params$import_vec),1)
+  N_vac <- params$vaccinations
+  N_vac <- abind(N_vac, array(0, dim=c(1, dim(N_vac)[2:3])), along=1)
+  params$vaccinations <- N_vac[rows,,]
+  return(params)
+}
                      

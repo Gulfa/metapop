@@ -20,26 +20,28 @@ fix_beta_large <- function(params, S0, I, R0, use_eig=FALSE, beta=NULL, symp_tra
 
 
 
-estimate_Rt_large_new <- function( traj, params,beta){
+estimate_Rt_large_new <- function( traj, params,beta, Rt_per_day=1){
   colsS <-paste0("S[", 1:(params$n*params$n_vac), "]")
   colsI <- paste0("I[", 1:(params$n*params$n_vac*params$n_strain), "]")
   params$large_mixing_matrix <- get_lmm(params)
   n <- params$n*params$n_vac
   Rts <- c()
-  for(t in 1:nrow(traj)){
+  steps_per_day <- 1/params$dt
+  for(t in seq(1, nrow(traj), steps_per_day/Rt_per_day)){
     S <- unlist(traj[t,] %>% dplyr::select(colsS))
     I <- unlist(traj[t,] %>%dplyr::select(colsI))
     S <- S /params$beta_norm
     new_I <- 0
-    beta <- params$beta_day
+#    beta <- params$beta_day
     for(i_strain in 1:params$n_strain){
-      ng <- get_next_gen_large(params, S, beta[unlist(traj[t, "t"])]*
+      ng <- get_next_gen_large(params, S, beta[unlist(traj[t, "t"]),]*
                                           params$beta_strain[i_strain], i_strain)
       new_I <- new_I + sum(ng %*% I[((i_strain - 1)*n):(i_strain*n-1)+1])
     }
     Rts <- c(Rts, new_I/ sum(I))
   }
-  return(data.frame(Rt=Rts))
+  tmp_Rt <- rep(Rts[1:(length(Rts)-1)], each=steps_per_day/Rt_per_day)
+  return(data.frame(Rt=c(tmp_Rt, rep(Rts[length(Rts)], nrow(traj) - length(tmp_Rt)))))
 }
   
 se1e2iiaR_calculate_beta_duration <- function(

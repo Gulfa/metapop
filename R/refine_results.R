@@ -14,6 +14,101 @@ add_per_n <- function(res, key, params){
 }
 
 
+add_per_age <- function(res, key, params){
+
+  fact <- 1
+  if(!is.null(params$merge_half_age)){
+    fact <- 2
+  }
+  n_list <- seq(1, params$n*params$n_vac*params$n_strain,by=params$age_groups/fact)
+  for(i in 0:(params$age_groups/fact-1)){
+    vals <- res[, paste0(key, "[",n_list+i,"]")]
+    if(!is.null(dim(vals))){
+      vals <- rowSums(vals)
+    }
+    res <- cbind(res, vals)
+    colnames(res)[ncol(res)] <- paste0(key, "_age_", i +1)
+  }
+  return(res)
+}
+
+
+add_per_vaccine_prio_group <- function(res, key, params, only_reg=FALSE){
+  res <- cbind(res, add_region_group(res, key, params, params$reg_prio, only_reg=only_reg))
+  colnames(res)[ncol(res)] <- paste0(key, "_plus")
+  res <- cbind(res, add_region_group(res, key, params, params$reg_prio_neutral, only_reg=only_reg))
+  colnames(res)[ncol(res)] <- paste0(key, "_neutral")
+  res <- cbind(res, add_region_group(res, key, params, params$reg_prio_minus, only_reg=only_reg))
+  colnames(res)[ncol(res)] <- paste0(key, "_minus")
+  return(res)
+}
+
+
+add_region_group <- function(res, key, params, regions, only_reg=FALSE){
+  tmp <- rep(0, nrow(res))
+  for(i in regions){
+
+    if(only_reg){
+
+      n_list <- i
+    }else{
+      n_list <- c()
+      for(j in 1:params$n_vac){
+        for(k in 1:params$n_strain){
+          n_list <- c(n_list, 1:params$age_groups + (i-1)*params$age_groups + (j-1)*params$n + (k-1)*params$n*params$n_vac)
+        }
+      }
+    }
+    vals <- res[, paste0(key, "[",n_list,"]")]
+    if(!is.null(dim(vals))){
+      vals <- rowSums(vals)
+    }
+    tmp <- tmp + vals
+  }
+  return(tmp)
+}
+  
+
+add_per_region <- function(res, key, params){
+  n_list <- seq(1, params$n*params$n_vac*params$n_strain,by=params$N_regions)
+  for(i in 1:params$N_regions){
+    n_list <- c()
+    for(j in 1:params$n_vac){
+      for(k in 1:params$n_strain){
+        n_list <- c(n_list, 1:params$age_groups + (i-1)*params$age_groups + (j-1)*params$n + (k-1)*params$n*params$n_vac)
+      }
+    }
+    vals <- res[, paste0(key, "[",n_list,"]")]
+    if(!is.null(dim(vals))){
+      vals <- rowSums(vals)
+    }
+    res <- cbind(res, vals)
+    colnames(res)[ncol(res)] <- paste0(key, "_region_", i)
+  }
+  return(res)
+}
+
+
+
+add_per_vac <- function(res, key, params){
+  for(i in 1:params$n_vac){
+    n_list <- c()
+    for(k in 1:params$n_strain){
+      n_list <- c(n_list, 1:params$n  + (i-1)*params$n + (k-1)*params$n*params$n_vac)
+    }
+    vals <- res[, paste0(key, "[",n_list,"]")]
+    if(!is.null(dim(vals))){
+      vals <- rowSums(vals)
+    }
+    res <- cbind(res, vals)
+    colnames(res)[ncol(res)] <- paste0(key, "_vac_", i)
+  }
+  return(res)
+}
+
+
+
+
 refine_results_odin <- function(res, params){
   d <- res
                                         #  res <- data.table(res)
@@ -28,11 +123,31 @@ refine_results_odin <- function(res, params){
  # non_vac_list <- 1:(N_reg*N_age)
   age_list <- seq(1, params$n*params$n_vac*params$n_strain,by=params$n)
 
-  res <- add_per_n(res, "tot_infected", params)
-  res <- add_per_n(res, "tot_resp", params)
-  res <- add_per_n(res, "tot_hosp", params)
-  res <- add_per_n(res, "D", params)
+  res <- add_per_age(res, "tot_infected", params)
+  res <- add_per_age(res, "tot_resp", params)
+  res <- add_per_age(res, "tot_hosp", params)
+  res <- add_per_age(res, "D", params)
   
+  if(!is.null(params$N_regions) & params$N_regions > 1){
+    res <- add_per_region(res, "tot_infected", params)
+    res <- add_per_region(res, "tot_resp", params)
+    res <- add_per_region(res, "tot_hosp", params)
+    res <- add_per_region(res, "D", params)
+  }
+  if(params$n_vac > 1){
+    res <- add_per_vac(res, "N", params)
+    res <- add_per_vac(res, "tot_infected", params)
+    res <- add_per_vac(res, "tot_hosp", params)
+  }
+  
+  if(!is.null(params$reg_prio)){
+    res <- add_per_vaccine_prio_group(res, "tot_infected", params)
+    res <- add_per_vaccine_prio_group(res, "tot_resp", params)
+    res <- add_per_vaccine_prio_group(res, "tot_hosp", params)
+    res <- add_per_vaccine_prio_group(res, "D", params)
+    res <- add_per_vaccine_prio_group(res, "tot_vac", params, only_reg=TRUE)
+
+  }
   
 #  res <- cbind(res, ICU_R=rowSums(res[, paste0("ICU_R[",1:n,"]")]))
 #  res <- cbind(res, MISC=rowSums(res[, paste0("MISC[",1:n,"]")] +

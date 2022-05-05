@@ -71,7 +71,14 @@ dim(rand_beta_factors) <- n
 rand_beta_factors[] <- user()
 rand_beta_sd <- user(0.1)
 ## Core equations for transitions between compartments:
-update(S[,]) <-  S[i,j] - sum(n_SE[i,j,]) +  vax_time_step[i,j] - n_waning[i,j] + sum(n_RS[i,j,]) -sum(N_imp[i,j,])  #+ (sum(mig_S[i,])- S[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))*dt + dt*S_waning[i]/waning_immunity_vax[i]*0   - n_imp[i] 
+
+n_vac_now[,] <- if (-vax_time_step[i,j] + sum(n_SE[i,j,])  > S[i,j]) - S[i,j] +  sum(n_SE[i,j,])  else round(vax_time_step[i,j]*S[i,1]/N[i,1]) 
+
+N_imp_non_zero[,,] <- if(S[i,j] - sum(n_SE[i,j,]) +  n_vac_now[i,j] - n_waning[i,j] + sum(n_RS[i,j,]) -sum(N_imp[i,j,])<0) 0 else N_imp[i,j,k]
+
+dim(n_vac_now) <- c(n, n_vac)
+dim(N_imp_non_zero) <- c(n, n_vac, n_strain)
+update(S[,]) <-  S[i,j] - sum(n_SE[i,j,]) +  n_vac_now[i,j] - n_waning[i,j] + sum(n_RS[i,j,]) -sum(N_imp_non_zero[i,j,])  #+ (sum(mig_S[i,])- S[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))*dt + dt*S_waning[i]/waning_immunity_vax[i]*0   - n_imp[i] 
 #S[] <- if(S[i] <0 ) 0 S[i]
 
 update(log_beta) <- log_beta + rnorm(0, rand_beta_sd)
@@ -81,7 +88,7 @@ update(Ea[,,]) <- Ea[i,j,k] + n_SEa[i,j,k] - n_EaA[i,j,k] + n_RIA[i,j,k]# +  dt*
 update(Es[,,]) <- Es[i,j,k] + n_SEi[i,j,k] - n_EsI[i,j,k] + n_RIS[i,j,k]# +   dt*( sum(mig_Es[i,])- Es[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))
 
 update(P[,,]) <-  P[i,j,k] + n_EsI[i,j,k] - n_PI[i,j,k]# + dt*(sum(mig_P[i,])- P[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))
-update(I[,,]) <-  I[i,j,k] + n_PI[i,j,k] - n_I[i,j,k] + N_imp[i,j,k]# + dt*(sum(mig_I[i,])- I[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))
+update(I[,,]) <-  I[i,j,k] + n_PI[i,j,k] - n_I[i,j,k] + N_imp_non_zero[i,j,k]# + dt*(sum(mig_I[i,])- I[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))
 
 #update(I_imp[]) <-  I_imp[i] -n_I_imp[i] +  n_imp[i]
 
@@ -115,7 +122,7 @@ update(hosp_inc[]) <- if(time %% steps_per_day==0) sum(n_IH[i,,]) + sum(n_IICU[i
 update(tot_hosp[,,]) <-  tot_hosp[i,j,k] + n_IH[i,j,k] + n_IICU[i,j,k]
 
 update(tot_resp[,,]) <- tot_resp[i,j,k] + n_ICU_HR[i,j,k]
-#update(tot_vac[]) <- tot_vac[i] + as.integer(round(N_vac[i]))
+update(tot_vac[]) <- tot_vac[i] + sum(n_vac_now[i,])
 #update(tot_misc[]) <- tot_misc[i] + n_PRE_MISC[i]
 #update(tot_imp[]) <- n_imp[i]
 
@@ -186,8 +193,7 @@ n_SEa[,,] <- rbinom(n_SE[i,j,k], pa[i,j,k])
 
 dim(n_SE_tot) <- c(n,n_vac)
 dim(rel_strain) <- c(n,n_vac,n_strain)
-n_waning[,] <- if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) else(
-                                                              -sum(n_waning[i, 1:(j-1)]))
+n_waning[,] <- if(include_waning==1) if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) else(-sum(n_waning[i, 1:(j-1)])) else 0
 
 
 dim(n_waning) <- c(n,n_vac)
@@ -296,7 +302,10 @@ dim(n_RS)<- c(n, n_vac, n_strain)
 
 ## Total population size (odin will recompute this at each timestep:
 ## automatically)
-N[,] <- S[i,j]  + sum(Ea[i,j,])+ sum(Es[i,j,]) + sum(P[i,j,]) +  sum(I[i,j,]) + sum(A[i,j,]) + sum(H[i,j,]) + sum(ICU_H[i,j,]) + sum(ICU_R[i,j,]) + sum(ICU_P[i,j,]) + sum(B_D[i,j,]) + sum(B_D_ICU[i,j,]) + sum(B_D_H[i,j,]) + sum(R[i,j,]) + sum(D[i,j,])
+initial(N[,]) <- S_ini[i,j]  + sum(Ea_ini[i,j,])+ sum(Es_ini[i,j,]) + sum(P_ini[i,j,]) +  sum(I_ini[i,j,]) + sum(A_ini[i,j,]) + sum(H_ini[i,j,]) + sum(ICU_H_ini[i,j,]) + sum(ICU_R_ini[i,j,]) + sum(ICU_P_ini[i,j,]) + sum(B_D_ini[i,j,]) + sum(B_D_ICU_ini[i,j,]) + sum(B_D_H_ini[i,j,]) + sum(R_ini[i,j,]) + sum(D_ini[i,j,])
+
+update(N[,]) <- S[i,j]  + sum(Ea[i,j,])+ sum(Es[i,j,]) + sum(P[i,j,]) +  sum(I[i,j,]) + sum(A[i,j,]) + sum(H[i,j,]) + sum(ICU_H[i,j,]) + sum(ICU_R[i,j,]) + sum(ICU_P[i,j,]) + sum(B_D[i,j,]) + sum(B_D_ICU[i,j,]) + sum(B_D_H[i,j,]) + sum(R[i,j,]) + sum(D[i,j,])
+
 
 update(tot_N) <- sum(N[,])
 
@@ -350,7 +359,7 @@ initial(hosp_inc[]) <- 0
 initial(tot_infected[,,]) <- tot_infected_ini[i,j,k]
 initial(tot_hosp[,,]) <- tot_hosp_ini[i,j,k]
 initial(tot_resp[,,]) <- tot_resp_ini[i,j,k]
-#initial(tot_vac[,,]) <- tot_vac_ini[i,j,k]
+initial(tot_vac[]) <- tot_vac_ini[i]
 #initial(tot_misc[,,]) <- tot_misc_ini[i,j,k]
 #initial(tot_imp[,,]) <- 0
 #initial(log_beta) <- 0
@@ -384,7 +393,7 @@ dim(N)<- c(n, n_vac)
 dim(tot_infected)<- c(n, n_vac, n_strain)
 dim(tot_hosp)<- c(n, n_vac, n_strain)
 dim(tot_resp)<- c(n, n_vac, n_strain)
-#dim(tot_vac)<- c(n, n_vac, n_strain)
+dim(tot_vac)<- n
 #dim(tot_misc)<- c(n, n_vac, n_strain)
 #dim(tot_imp)<- c(n, n_vac, n_strain)
 #dim(fraction_of_vaccines_given_to_S)<- c(n, n_vac, n_strain)
@@ -426,7 +435,7 @@ dim(D_ini)<- c(n, n_vac, n_strain)
 dim(tot_infected_ini)<- c(n, n_vac, n_strain)
 dim(tot_hosp_ini)<- c(n, n_vac, n_strain)
 dim(tot_resp_ini)<- c(n, n_vac, n_strain)
-#dim(tot_vac_ini)<- c(n, n_vac, n_strain)
+dim(tot_vac_ini)<- n
 #dim(tot_misc_ini)<- c(n, n_vac, n_strain)
 
 #dim(reg_pop_long)<- c(n, n_vac, n_strain)
@@ -456,6 +465,7 @@ dim(sympt_frac)<- c(n, n_vac, n_strain)
 dim(symp_trans)<- c(n, n_vac, n_strain)
 dim(T_waning)<- c(n, n_vac)
 dim(beta_strain) <- n_strain
+include_waning <- user(0)
 mixing_matrix[,] <- user()
 #migration_matrix[,] <- user()
 latent_period <- user()
@@ -531,7 +541,7 @@ D_ini[,,] <- user(0)
 tot_infected_ini[,,] <- user(0)
 tot_hosp_ini[,,] <- user(0)
 tot_resp_ini[,,] <- user(0)
-#tot_vac_ini[,,] <- user(0)
+tot_vac_ini[] <- user(0)
 #reg_pop_long[,,] <- user()
 beta_norm[] <- user(0)
 #MISC_ini[,,] <- user(0)

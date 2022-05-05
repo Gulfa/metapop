@@ -12,6 +12,7 @@ basic_params <- function(N=9, n_vac=2, L=100, n_strain=1){
     beta_day=matrix(0.05, ncol=N, nrow=L),
                                         #    vac_time_full_effect=array(14.0, N),
     mixing_matrix=matrix(1.0, nrow=N, ncol=N),
+    tot_vac_ini=rep(0, N),
     migration_matrix=matrix(0.0, nrow=N, ncol=N),
     latent_period=3.0,
     beta_strain=rep(1, n_strain),
@@ -127,14 +128,15 @@ test_that("Test vaccinaion implemenation", {
 
 
 test_that("Test Waning vaccine", {
-  params <- basic_params(N=9, n_vac=3)
+  params <- basic_params(N=1, n_vac=3)
   params$T_waning[,2] <- 3
   params$beta_day[,] <- 0
+  params$include_waning <- 1
 
   results <- run_params(params, L=100, 3, 3)
   N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
   expect_true(N_t)
-  expect_gte(mean(results[t==100,get("S[19]")]), 190000)
+  expect_gte(mean(results[t==100,get("S[3]")]), 180000)
   
 })
 
@@ -175,7 +177,7 @@ test_that("Test Rt", {
   beta_1 <- fix_beta_large(params, params$S_ini, params$I_ini, 1, beta=params$beta_day[1,], use_eig=TRUE)
   params$beta_day=params$beta_day*beta_1
   params$dt <- 0.1
-  results <- run_params(params, L=500, 1, 1)
+  results <- run_params(params, L=50, 1, 1)
   inc <- results[, mean(get("incidence")), by=t]
 
   expect_lte(abs(inc[t==200, V1] - inc[t==400, V1]), 30)
@@ -227,7 +229,7 @@ test_that("Test cut_peak", {
   expect_true(N_t)
   
   expect_gte(mean(results1[t==200, get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+100000)
-  expect_gte(mean(results2[t==200, get("tot_infected")]), mean(results3[t==200,get("tot_infected")])+50000)
+  expect_gte(mean(results2[t==200, get("tot_infected")]), mean(results3[t==200,get("tot_infected")])+45000)
   
 })
 
