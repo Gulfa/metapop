@@ -122,7 +122,7 @@ update(hosp_inc[]) <- if(time %% steps_per_day==0) sum(n_IH[i,,]) + sum(n_IICU[i
 update(tot_hosp[,,]) <-  tot_hosp[i,j,k] + n_IH[i,j,k] + n_IICU[i,j,k]
 
 update(tot_resp[,,]) <- tot_resp[i,j,k] + n_ICU_HR[i,j,k]
-update(tot_vac[]) <- tot_vac[i] + sum(n_vac_now[i,])
+update(tot_vac[,]) <- tot_vac[i,j] + n_vac_now[i,j]
 #update(tot_misc[]) <- tot_misc[i] + n_PRE_MISC[i]
 #update(tot_imp[]) <- n_imp[i]
 
@@ -359,7 +359,7 @@ initial(hosp_inc[]) <- 0
 initial(tot_infected[,,]) <- tot_infected_ini[i,j,k]
 initial(tot_hosp[,,]) <- tot_hosp_ini[i,j,k]
 initial(tot_resp[,,]) <- tot_resp_ini[i,j,k]
-initial(tot_vac[]) <- tot_vac_ini[i]
+initial(tot_vac[,]) <- tot_vac_ini[i,j]
 #initial(tot_misc[,,]) <- tot_misc_ini[i,j,k]
 #initial(tot_imp[,,]) <- 0
 #initial(log_beta) <- 0
@@ -393,7 +393,7 @@ dim(N)<- c(n, n_vac)
 dim(tot_infected)<- c(n, n_vac, n_strain)
 dim(tot_hosp)<- c(n, n_vac, n_strain)
 dim(tot_resp)<- c(n, n_vac, n_strain)
-dim(tot_vac)<- n
+dim(tot_vac)<- c(n, n_vac)
 #dim(tot_misc)<- c(n, n_vac, n_strain)
 #dim(tot_imp)<- c(n, n_vac, n_strain)
 #dim(fraction_of_vaccines_given_to_S)<- c(n, n_vac, n_strain)
@@ -435,7 +435,7 @@ dim(D_ini)<- c(n, n_vac, n_strain)
 dim(tot_infected_ini)<- c(n, n_vac, n_strain)
 dim(tot_hosp_ini)<- c(n, n_vac, n_strain)
 dim(tot_resp_ini)<- c(n, n_vac, n_strain)
-dim(tot_vac_ini)<- n
+dim(tot_vac_ini)<- c(n, n_vac)
 #dim(tot_misc_ini)<- c(n, n_vac, n_strain)
 
 #dim(reg_pop_long)<- c(n, n_vac, n_strain)
@@ -541,7 +541,7 @@ D_ini[,,] <- user(0)
 tot_infected_ini[,,] <- user(0)
 tot_hosp_ini[,,] <- user(0)
 tot_resp_ini[,,] <- user(0)
-tot_vac_ini[] <- user(0)
+tot_vac_ini[,] <- user(0)
 #reg_pop_long[,,] <- user()
 beta_norm[] <- user(0)
 #MISC_ini[,,] <- user(0)

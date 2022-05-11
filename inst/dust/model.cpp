@@ -103,7 +103,7 @@ __host__ __device__ T odin_max(T x, T y) {
 // [[dust::param(tot_hosp_ini, has_default = TRUE, default_value = 0L, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(tot_infected_ini, has_default = TRUE, default_value = 0L, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(tot_resp_ini, has_default = TRUE, default_value = 0L, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
-// [[dust::param(tot_vac_ini, has_default = TRUE, default_value = 0L, rank = 1, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(tot_vac_ini, has_default = TRUE, default_value = 0L, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(waning_immunity, has_default = TRUE, default_value = 10000L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 class model {
 public:
@@ -663,7 +663,11 @@ public:
     int dim_tot_resp_ini_2;
     int dim_tot_resp_ini_3;
     int dim_tot_vac;
+    int dim_tot_vac_1;
+    int dim_tot_vac_2;
     int dim_tot_vac_ini;
+    int dim_tot_vac_ini_1;
+    int dim_tot_vac_ini_2;
     int dim_transmisibility;
     int dim_transmisibility_1;
     int dim_transmisibility_12;
@@ -861,9 +865,9 @@ public:
     state[9] = shared->initial_beta_thresh;
     state[10] = shared->initial_tot_N;
     std::copy(shared->initial_hosp_inc.begin(), shared->initial_hosp_inc.end(), state.begin() + 11);
-    std::copy(shared->initial_tot_vac.begin(), shared->initial_tot_vac.end(), state.begin() + shared->offset_variable_tot_vac);
     std::copy(shared->initial_N.begin(), shared->initial_N.end(), state.begin() + shared->offset_variable_N);
     std::copy(shared->initial_S.begin(), shared->initial_S.end(), state.begin() + shared->offset_variable_S);
+    std::copy(shared->initial_tot_vac.begin(), shared->initial_tot_vac.end(), state.begin() + shared->offset_variable_tot_vac);
     std::copy(shared->initial_Ea.begin(), shared->initial_Ea.end(), state.begin() + shared->offset_variable_Ea);
     std::copy(shared->initial_Es.begin(), shared->initial_Es.end(), state.begin() + shared->offset_variable_Es);
     std::copy(shared->initial_P.begin(), shared->initial_P.end(), state.begin() + shared->offset_variable_P);
@@ -1307,8 +1311,10 @@ public:
         }
       }
     }
-    for (int i = 1; i <= shared->dim_tot_vac; ++i) {
-      state_next[shared->offset_variable_tot_vac + i - 1] = tot_vac[i - 1] + odin_sum2<real_type>(internal.n_vac_now.data(), i - 1, i, 0, shared->dim_n_vac_now_2, shared->dim_n_vac_now_1);
+    for (int i = 1; i <= shared->dim_tot_vac_1; ++i) {
+      for (int j = 1; j <= shared->dim_tot_vac_2; ++j) {
+        state_next[shared->offset_variable_tot_vac + i - 1 + shared->dim_tot_vac_1 * (j - 1)] = tot_vac[shared->dim_tot_vac_1 * (j - 1) + i - 1] + internal.n_vac_now[shared->dim_n_vac_now_1 * (j - 1) + i - 1];
+      }
     }
     for (int i = 1; i <= shared->dim_Es_1; ++i) {
       for (int j = 1; j <= shared->dim_Es_2; ++j) {
@@ -1994,8 +2000,10 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_tot_resp_ini_1 = shared->n;
   shared->dim_tot_resp_ini_2 = shared->n_vac;
   shared->dim_tot_resp_ini_3 = shared->n_strain;
-  shared->dim_tot_vac = shared->n;
-  shared->dim_tot_vac_ini = shared->n;
+  shared->dim_tot_vac_1 = shared->n;
+  shared->dim_tot_vac_2 = shared->n_vac;
+  shared->dim_tot_vac_ini_1 = shared->n;
+  shared->dim_tot_vac_ini_2 = shared->n_vac;
   shared->dim_transmisibility_1 = shared->n;
   shared->dim_transmisibility_2 = shared->n_vac;
   shared->dim_transmisibility_3 = shared->n_strain;
@@ -2020,7 +2028,6 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->threshold = user_get_array_fixed<real_type, 1>(user, "threshold", shared->threshold, {shared->dim_threshold}, NA_REAL, NA_REAL);
   internal.beta = std::vector<real_type>(shared->dim_beta);
   shared->initial_hosp_inc = std::vector<real_type>(shared->dim_hosp_inc);
-  shared->initial_tot_vac = std::vector<real_type>(shared->dim_tot_vac);
   shared->beta_norm = user_get_array_fixed<real_type, 1>(user, "beta_norm", shared->beta_norm, {shared->dim_beta_norm}, NA_REAL, NA_REAL);
   shared->beta_strain = user_get_array_fixed<real_type, 1>(user, "beta_strain", shared->beta_strain, {shared->dim_beta_strain}, NA_REAL, NA_REAL);
   shared->dim_A = shared->dim_A_1 * shared->dim_A_2 * shared->dim_A_3;
@@ -2227,6 +2234,8 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_tot_resp_12 = shared->dim_tot_resp_1 * shared->dim_tot_resp_2;
   shared->dim_tot_resp_ini = shared->dim_tot_resp_ini_1 * shared->dim_tot_resp_ini_2 * shared->dim_tot_resp_ini_3;
   shared->dim_tot_resp_ini_12 = shared->dim_tot_resp_ini_1 * shared->dim_tot_resp_ini_2;
+  shared->dim_tot_vac = shared->dim_tot_vac_1 * shared->dim_tot_vac_2;
+  shared->dim_tot_vac_ini = shared->dim_tot_vac_ini_1 * shared->dim_tot_vac_ini_2;
   shared->dim_transmisibility = shared->dim_transmisibility_1 * shared->dim_transmisibility_2 * shared->dim_transmisibility_3;
   shared->dim_transmisibility_12 = shared->dim_transmisibility_1 * shared->dim_transmisibility_2;
   shared->dim_vaccinations = shared->dim_vaccinations_1 * shared->dim_vaccinations_2 * shared->dim_vaccinations_3;
@@ -2239,10 +2248,8 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   for (int i = 1; i <= shared->dim_hosp_inc; ++i) {
     shared->initial_hosp_inc[i - 1] = 0;
   }
-  shared->offset_variable_N = shared->dim_hosp_inc + shared->dim_tot_vac + 11;
-  shared->offset_variable_tot_vac = shared->dim_hosp_inc + 11;
+  shared->offset_variable_N = shared->dim_hosp_inc + 11;
   shared->rand_beta_factors = user_get_array_fixed<real_type, 1>(user, "rand_beta_factors", shared->rand_beta_factors, {shared->dim_rand_beta_factors}, NA_REAL, NA_REAL);
-  shared->tot_vac_ini = user_get_array_fixed<real_type, 1>(user, "tot_vac_ini", shared->tot_vac_ini, {shared->dim_tot_vac_ini}, NA_REAL, NA_REAL);
   shared->A_ini = user_get_array_fixed<real_type, 3>(user, "A_ini", shared->A_ini, {shared->dim_A_ini_1, shared->dim_A_ini_2, shared->dim_A_ini_3}, NA_REAL, NA_REAL);
   shared->B_D_H_ini = user_get_array_fixed<real_type, 3>(user, "B_D_H_ini", shared->B_D_H_ini, {shared->dim_B_D_H_ini_1, shared->dim_B_D_H_ini_2, shared->dim_B_D_H_ini_3}, NA_REAL, NA_REAL);
   shared->B_D_ICU_ini = user_get_array_fixed<real_type, 3>(user, "B_D_ICU_ini", shared->B_D_ICU_ini, {shared->dim_B_D_ICU_ini_1, shared->dim_B_D_ICU_ini_2, shared->dim_B_D_ICU_ini_3}, NA_REAL, NA_REAL);
@@ -2281,6 +2288,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->initial_tot_hosp = std::vector<real_type>(shared->dim_tot_hosp);
   shared->initial_tot_infected = std::vector<real_type>(shared->dim_tot_infected);
   shared->initial_tot_resp = std::vector<real_type>(shared->dim_tot_resp);
+  shared->initial_tot_vac = std::vector<real_type>(shared->dim_tot_vac);
   internal.lambda_ij = std::vector<real_type>(shared->dim_lambda_ij);
   internal.n_AR = std::vector<real_type>(shared->dim_n_AR);
   internal.n_B_D_D = std::vector<real_type>(shared->dim_n_B_D_D);
@@ -2334,9 +2342,6 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->hosp_prob = user_get_array_fixed<real_type, 3>(user, "hosp_prob", shared->hosp_prob, {shared->dim_hosp_prob_1, shared->dim_hosp_prob_2, shared->dim_hosp_prob_3}, NA_REAL, NA_REAL);
   shared->icu_prob = user_get_array_fixed<real_type, 3>(user, "icu_prob", shared->icu_prob, {shared->dim_icu_prob_1, shared->dim_icu_prob_2, shared->dim_icu_prob_3}, NA_REAL, NA_REAL);
   shared->import_vec = user_get_array_fixed<real_type, 4>(user, "import_vec", shared->import_vec, {shared->dim_import_vec_1, shared->dim_import_vec_2, shared->dim_import_vec_3, shared->dim_import_vec_4}, NA_REAL, NA_REAL);
-  for (int i = 1; i <= shared->dim_tot_vac; ++i) {
-    shared->initial_tot_vac[i - 1] = shared->tot_vac_ini[i - 1];
-  }
   shared->length_hosp = user_get_array_fixed<real_type, 3>(user, "length_hosp", shared->length_hosp, {shared->dim_length_hosp_1, shared->dim_length_hosp_2, shared->dim_length_hosp_3}, NA_REAL, NA_REAL);
   shared->length_icu = user_get_array_fixed<real_type, 3>(user, "length_icu", shared->length_icu, {shared->dim_length_icu_1, shared->dim_length_icu_2, shared->dim_length_icu_3}, NA_REAL, NA_REAL);
   shared->mixing_matrix = user_get_array_fixed<real_type, 2>(user, "mixing_matrix", shared->mixing_matrix, {shared->dim_mixing_matrix_1, shared->dim_mixing_matrix_2}, NA_REAL, NA_REAL);
@@ -2354,10 +2359,11 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->offset_variable_ICU_R = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_hosp_inc + shared->dim_tot_vac + 11;
   shared->offset_variable_P = shared->dim_Ea + shared->dim_Es + shared->dim_N + shared->dim_S + shared->dim_hosp_inc + shared->dim_tot_vac + 11;
   shared->offset_variable_R = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_hosp_inc + shared->dim_tot_vac + 11;
-  shared->offset_variable_S = shared->dim_N + shared->dim_hosp_inc + shared->dim_tot_vac + 11;
+  shared->offset_variable_S = shared->dim_N + shared->dim_hosp_inc + 11;
   shared->offset_variable_tot_hosp = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_hosp_inc + shared->dim_tot_infected + shared->dim_tot_vac + 11;
   shared->offset_variable_tot_infected = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_hosp_inc + shared->dim_tot_vac + 11;
   shared->offset_variable_tot_resp = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_hosp_inc + shared->dim_tot_hosp + shared->dim_tot_infected + shared->dim_tot_vac + 11;
+  shared->offset_variable_tot_vac = shared->dim_N + shared->dim_S + shared->dim_hosp_inc + 11;
   shared->post_icu = user_get_array_fixed<real_type, 3>(user, "post_icu", shared->post_icu, {shared->dim_post_icu_1, shared->dim_post_icu_2, shared->dim_post_icu_3}, NA_REAL, NA_REAL);
   shared->pre_icu = user_get_array_fixed<real_type, 3>(user, "pre_icu", shared->pre_icu, {shared->dim_pre_icu_1, shared->dim_pre_icu_2, shared->dim_pre_icu_3}, NA_REAL, NA_REAL);
   shared->prob_death_hosp = user_get_array_fixed<real_type, 3>(user, "prob_death_hosp", shared->prob_death_hosp, {shared->dim_prob_death_hosp_1, shared->dim_prob_death_hosp_2, shared->dim_prob_death_hosp_3}, NA_REAL, NA_REAL);
@@ -2371,6 +2377,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->tot_hosp_ini = user_get_array_fixed<real_type, 3>(user, "tot_hosp_ini", shared->tot_hosp_ini, {shared->dim_tot_hosp_ini_1, shared->dim_tot_hosp_ini_2, shared->dim_tot_hosp_ini_3}, NA_REAL, NA_REAL);
   shared->tot_infected_ini = user_get_array_fixed<real_type, 3>(user, "tot_infected_ini", shared->tot_infected_ini, {shared->dim_tot_infected_ini_1, shared->dim_tot_infected_ini_2, shared->dim_tot_infected_ini_3}, NA_REAL, NA_REAL);
   shared->tot_resp_ini = user_get_array_fixed<real_type, 3>(user, "tot_resp_ini", shared->tot_resp_ini, {shared->dim_tot_resp_ini_1, shared->dim_tot_resp_ini_2, shared->dim_tot_resp_ini_3}, NA_REAL, NA_REAL);
+  shared->tot_vac_ini = user_get_array_fixed<real_type, 2>(user, "tot_vac_ini", shared->tot_vac_ini, {shared->dim_tot_vac_ini_1, shared->dim_tot_vac_ini_2}, NA_REAL, NA_REAL);
   shared->transmisibility = user_get_array_fixed<real_type, 3>(user, "transmisibility", shared->transmisibility, {shared->dim_transmisibility_1, shared->dim_transmisibility_2, shared->dim_transmisibility_3}, NA_REAL, NA_REAL);
   shared->vaccinations = user_get_array_fixed<real_type, 3>(user, "vaccinations", shared->vaccinations, {shared->dim_vaccinations_1, shared->dim_vaccinations_2, shared->dim_vaccinations_3}, NA_REAL, NA_REAL);
   shared->waning_immunity_vax = user_get_array_fixed<real_type, 3>(user, "waning_immunity_vax", shared->waning_immunity_vax, {shared->dim_waning_immunity_vax_1, shared->dim_waning_immunity_vax_2, shared->dim_waning_immunity_vax_3}, NA_REAL, NA_REAL);
@@ -2503,6 +2510,11 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
       }
     }
   }
+  for (int i = 1; i <= shared->dim_tot_vac_1; ++i) {
+    for (int j = 1; j <= shared->dim_tot_vac_2; ++j) {
+      shared->initial_tot_vac[i - 1 + shared->dim_tot_vac_1 * (j - 1)] = shared->tot_vac_ini[shared->dim_tot_vac_ini_1 * (j - 1) + i - 1];
+    }
+  }
   for (int i = 1; i <= shared->dim_p_HR_1; ++i) {
     for (int j = 1; j <= shared->dim_p_HR_2; ++j) {
       for (int k = 1; k <= shared->dim_p_HR_3; ++k) {
@@ -2591,7 +2603,7 @@ template <>
 cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   const model::internal_type internal = pars.internal;
   const std::shared_ptr<const model::shared_type> shared = pars.shared;
-  cpp11::writable::strings nms({"time", "beta_dyn_change", "beta_cp", "trigger", "incidence_int", "peak_trigger", "e_int", "peak_timer", "log_beta", "beta_thresh", "tot_N", "hosp_inc", "tot_vac", "N", "S", "Ea", "Es", "P", "I", "A", "H", "ICU_H", "ICU_R", "ICU_P", "B_D", "B_D_H", "B_D_ICU", "R", "D", "tot_infected", "tot_hosp", "tot_resp"});
+  cpp11::writable::strings nms({"time", "beta_dyn_change", "beta_cp", "trigger", "incidence_int", "peak_trigger", "e_int", "peak_timer", "log_beta", "beta_thresh", "tot_N", "hosp_inc", "N", "S", "tot_vac", "Ea", "Es", "P", "I", "A", "H", "ICU_H", "ICU_R", "ICU_P", "B_D", "B_D_H", "B_D_ICU", "R", "D", "tot_infected", "tot_hosp", "tot_resp"});
   cpp11::writable::list dim(32);
   dim[0] = cpp11::writable::integers({1});
   dim[1] = cpp11::writable::integers({1});
@@ -2605,9 +2617,9 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   dim[9] = cpp11::writable::integers({1});
   dim[10] = cpp11::writable::integers({1});
   dim[11] = cpp11::writable::integers({shared->dim_hosp_inc});
-  dim[12] = cpp11::writable::integers({shared->dim_tot_vac});
-  dim[13] = cpp11::writable::integers({shared->dim_N_1, shared->dim_N_2});
-  dim[14] = cpp11::writable::integers({shared->dim_S_1, shared->dim_S_2});
+  dim[12] = cpp11::writable::integers({shared->dim_N_1, shared->dim_N_2});
+  dim[13] = cpp11::writable::integers({shared->dim_S_1, shared->dim_S_2});
+  dim[14] = cpp11::writable::integers({shared->dim_tot_vac_1, shared->dim_tot_vac_2});
   dim[15] = cpp11::writable::integers({shared->dim_Ea_1, shared->dim_Ea_2, shared->dim_Ea_3});
   dim[16] = cpp11::writable::integers({shared->dim_Es_1, shared->dim_Es_2, shared->dim_Es_3});
   dim[17] = cpp11::writable::integers({shared->dim_P_1, shared->dim_P_2, shared->dim_P_3});
@@ -2639,9 +2651,9 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   index[9] = cpp11::writable::integers({10});
   index[10] = cpp11::writable::integers({11});
   index[11] = integer_sequence(12, shared->dim_hosp_inc);
-  index[12] = integer_sequence(shared->offset_variable_tot_vac + 1, shared->dim_tot_vac);
-  index[13] = integer_sequence(shared->offset_variable_N + 1, shared->dim_N);
-  index[14] = integer_sequence(shared->offset_variable_S + 1, shared->dim_S);
+  index[12] = integer_sequence(shared->offset_variable_N + 1, shared->dim_N);
+  index[13] = integer_sequence(shared->offset_variable_S + 1, shared->dim_S);
+  index[14] = integer_sequence(shared->offset_variable_tot_vac + 1, shared->dim_tot_vac);
   index[15] = integer_sequence(shared->offset_variable_Ea + 1, shared->dim_Ea);
   index[16] = integer_sequence(shared->offset_variable_Es + 1, shared->dim_Es);
   index[17] = integer_sequence(shared->offset_variable_P + 1, shared->dim_P);
