@@ -14,10 +14,19 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
                          n_particles = N_particles,
                          n_threads = N_threads,
                          )
-
+  
   raw_results <- dust_model$simulate(1:(L/params$dt))
+  if(!silent){
+    print(glue::glue("Finished raw run {run_name}"))
+  }
+
   params$dust_index <- dust_model$info()$index
   results <- refine_results_odin_dust(raw_results, params, N_threads)
+  if(!silent){
+    print(glue::glue("Finished refine results {run_name}"))
+  }
+
+
   beta <- list()
   if(params$rand_beta == 1){
     for(n in 1:N_particles){
