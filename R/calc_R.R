@@ -5,7 +5,6 @@ fix_beta_large <- function(params, S0, I, R0, use_eig=FALSE, beta=NULL, symp_tra
   params$large_mixing_matrix <- get_lmm(params)
   ng <- get_next_gen_large(params, S0, beta, symp_trans=symp_trans)
   if(sum(I)==0) use_eig <- T
-  
   if(use_eig){
     max_eigen <- Re(eigen(ng, only.values=T)$values[1])
     max_eigen

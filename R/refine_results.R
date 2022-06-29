@@ -246,9 +246,9 @@ refine_results_odin <- function(res, params){
 
 refine_results_odin_dust <- function(res, params, N_threads){
 
-#  refined <- lapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params, n, N_reg, N_age, N_wax))
+                                        #  refined <- lapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params, n, N_reg, N_age, N_wax))
   refined <- parallel::mclapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params,n),
-                                  mc.cores=N_threads)
+                                mc.cores=N_threads)
 ##  refined <- lapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params,n))
 
   
