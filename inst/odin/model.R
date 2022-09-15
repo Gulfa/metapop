@@ -17,59 +17,95 @@ dim(N_imp) <- c( n, n_vac, n_strain)
 import_vec[,,,] <- user()
                                         # import
 
-# Daily varying beta or threshold based beta
+## Different beta modes:
+## 1: input beta_day
+## 2: Keep hospitalisation under/around threshold
+## 3: Random walk on log_beta scale
+## 4: Spontaneous behviour change
+## 5: Cut peak
 
+
+dim(beta) <- c(n, n_vac)
+beta_mode <- user()
+
+## Daily varying beta
+dim(beta_day) <- c(N_steps, n)
+beta_day[,] <- user()
+
+
+##threshold based beta
 current_tot_in_hosp <- sum(H[,,]) + sum(ICU_H[,,]) + sum(ICU_R[,,]) + sum(ICU_P[,,])
 new_tot_in_hosp <- sum(H[,,]) + sum(ICU_H[,,]) + sum(ICU_R[,,]) + sum(ICU_P[,,]) + sum(n_IH[,,])  - sum(n_H[,,])  +sum(n_IICU[,,]) -sum(n_ICU_P[,,])
-
 current_infected <- sum(I[,,])
 new_infected <- sum(I[,,]) + sum(n_PI[,,]) - sum(n_I[,,])
-
 r <-  threshold[1]- current_tot_in_hosp
 dr_dt <- (current_tot_in_hosp - new_tot_in_hosp)/dt
-
-
 update(trigger) <- if(current_tot_in_hosp >threshold[2]) 1 else trigger
-
 new_beta_thresh <- if(trigger == 1) change_factor[1] + 1/threshold[1]*(change_factor[2]*r + change_factor[3]*e_int +  change_factor[4]*(dr_dt)) else beta_thresh
-
-threshold_beta <- user(0)
+update(beta_thresh) <- if(new_beta_thresh > threshold_max) threshold_max else ( if(new_beta_thresh < threshold_min) threshold_min else new_beta_thresh)
 dim(threshold) <- 2
 threshold[] <- user(100)
 change_factor[] <- user(1)
 dim(change_factor) <- 4
 
-initial(beta_dyn_change) <- dyn_change[1]
-update(beta_dyn_change) <- if(beta_cut_peak==1 && peak_trigger==1 && peak_timer < beta_cut_peak_param[4]) beta_cp else dyn_change[1]*(1-dyn_change[2]*(dyn_change[3] + dyn_change[4]*(sum(I[,,]) + sum(P[,,]) + sum(A[,,]))/sum(beta_norm[])))
-dim(dyn_change) <- 4
-dyn_change[] <- user(0)
+## Random walk
+dim(rand_beta_factors) <- n
+rand_beta_factors[] <- user()
+rand_beta_sd <- user(0.1)
+update(log_beta) <- log_beta + rnorm(0, rand_beta_sd)
 
-initial(beta_cp) <-  beta_cut_peak_param[1] 
-update(beta_cp) <- if(peak_trigger==1 && peak_timer < beta_cut_peak_param[4]) beta_cut_peak_param[2] else beta_cut_peak_param[1] 
+## Spontaneous behaviour change
+## Here beta_day is treated as the "government policy" and the total effect is a combination 
+
+dim(spont_behav_change_params) <- 4 # beta_0 beta without any interventions or regulation, T - time horizon, v - cost of isolation, a the speed of transition in logit function
+spont_behav_change_params[] <- user(0)
+dim(expected_health_loss) <- c(n, n_vac)
+expected_health_loss[,] <- user(0)
+
+# [0,1]
+dim(contact_change) <- c(n, n_vac)
+initial(contact_change[,]) <- 0
+
+update(contact_change[,]) <- exp(spont_behav_change_params[4]*( (1-(1- sum(p_SE[i,j,]))^spont_behav_change_params[2]) * expected_health_loss[i,j] - spont_behav_change_params[2] *spont_behav_change_params[3]))/(1 + exp(spont_behav_change_params[4]*((1-(1- sum(p_SE[i,j,]))^spont_behav_change_params[2]) * expected_health_loss[i,j] - spont_behav_change_params[2]*spont_behav_change_params[3])))
+
+#update(contact_change[,]) <- logit(spont_behav_change_params[4]*( (1-(1- sum(p_SE[i,j,])^spont_behav_change_params[2])) * expected_health_loss[i,j] - spont_behav_change_params[2] *spont_behav_change_params[3]))
+dim(beta_reduction) <- c(n, n_vac)
+beta_reduction[,] <- 1 - beta_day[step, i] /spont_behav_change_params[1] 
+
+
+initial(beta_spont_behaviour[,]) <- beta_day[1, i]
+dim(beta_spont_behaviour) <- c(n,n_vac)
+update(beta_spont_behaviour[,]) <- spont_behav_change_params[1]*(1 - 0.6*(beta_reduction[i,j] + contact_change[i,j]) + 0.3*(beta_reduction[i,j]*contact_change[i,j]))
+
+
+
+## Cut peak
+
+initial(beta_cut_peak) <-  beta_cut_peak_param[1] 
+update(beta_cut_peak) <- if(peak_trigger==1 && peak_timer < beta_cut_peak_param[4]) beta_cut_peak_param[2] else beta_cut_peak_param[1] 
 dim(beta_cut_peak_param) <- 4
 beta_cut_peak_param[] <- user(0)
-
-beta[] <- if(rand_beta==1) exp(log_beta)*rand_beta_factors[i] else (if (threshold_beta==1) beta_thresh*rand_beta_factors[i] else (if(beta_dynamic_change==1)  beta_dyn_change*rand_beta_factors[i] else (if (beta_cut_peak==1) beta_cp*rand_beta_factors[i] else beta_day[step,i])))
-
-beta_dynamic_change <- user(0)
-beta_cut_peak <- user(0)
 initial(trigger) <- 0
 initial(incidence_int) <- 0
 update(incidence_int) <- sum(n_SE[,,])
 initial(peak_trigger) <- 0
 initial(e_int) <- 0
 update(e_int) <- e_int + r*dt
+
 update(peak_trigger) <- if(sum(S[,])/sum(beta_norm[])< beta_cut_peak_param[3]) 1 else 0#if(time>20 && current_infected > beta_cut_peak_param[3] && sum(n_SE[,,]) < incidence_int) 1 else peak_trigger
 initial(peak_timer) <- 0
 update(peak_timer) <- if(peak_trigger==0) 0 else peak_timer + dt
 
-dim(beta) <- c(n)
-dim(beta_day) <- c(N_steps, n)
-beta_day[,] <- user()
-rand_beta <- user()
-dim(rand_beta_factors) <- n
-rand_beta_factors[] <- user()
-rand_beta_sd <- user(0.1)
+
+
+
+
+beta[,] <- if(beta_mode==1) beta_day[step, i] else
+             (if(beta_mode == 2) beta_thresh*rand_beta_factors[i] else
+                (if(beta_mode == 3) exp(log_beta)*rand_beta_factors[i] else
+                  ( if(beta_mode==4)  beta_spont_behaviour[i,j] else
+                      ( if(beta_mode==5) beta_cut_peak*rand_beta_factors[i] else 0))))
+
 ## Core equations for transitions between compartments:
 
 n_vac_now[,] <- if (-vax_time_step[i,j] + sum(n_SE[i,j,])  > S[i,j]) - S[i,j] +  sum(n_SE[i,j,])  else round(vax_time_step[i,j]*S[i,1]/N[i,1]) 
@@ -81,8 +117,6 @@ dim(N_imp_non_zero) <- c(n, n_vac, n_strain)
 update(S[,]) <-  S[i,j] - sum(n_SE[i,j,]) +  n_vac_now[i,j] - n_waning[i,j] + sum(n_RS[i,j,]) -sum(N_imp_non_zero[i,j,])  #+ (sum(mig_S[i,])- S[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))*dt + dt*S_waning[i]/waning_immunity_vax[i]*0   - n_imp[i] 
 #S[] <- if(S[i] <0 ) 0 S[i]
 
-update(log_beta) <- log_beta + rnorm(0, rand_beta_sd)
-update(beta_thresh) <- if(new_beta_thresh > threshold_max) threshold_max else ( if(new_beta_thresh < threshold_min) threshold_min else new_beta_thresh)
 update(Ea[,,]) <- Ea[i,j,k] + n_SEa[i,j,k] - n_EaA[i,j,k] + n_RIA[i,j,k]# +  dt*(sum(mig_Ea[i,])- Ea[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))
 
 update(Es[,,]) <- Es[i,j,k] + n_SEi[i,j,k] - n_EsI[i,j,k] + n_RIS[i,j,k]# +   dt*( sum(mig_Es[i,])- Es[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))
@@ -118,7 +152,8 @@ update(D[,,]) <- D[i,j,k] + n_B_D_D[i,j,k] + n_B_H_D[i,j,k] + n_B_ICU_D[i,j,k]
 
 update(tot_infected[,,]) <-  tot_infected[i,j,k] + n_SE[i,j,k]
   
-update(hosp_inc[]) <- if(time %% steps_per_day==0) sum(n_IH[i,,]) + sum(n_IICU[i,,]) else hosp_inc[i]+sum(n_IH[i,,]) + sum(n_IICU[i,,])
+update(hosp_inc[]) <- if(step %% steps_per_day==0) sum(n_IH[i,,]) + sum(n_IICU[i,,]) else hosp_inc[i]+sum(n_IH[i,,]) + sum(n_IICU[i,,])
+update(tot_hosp_inc) <- sum(hosp_inc)
 update(tot_hosp[,,]) <-  tot_hosp[i,j,k] + n_IH[i,j,k] + n_IICU[i,j,k]
 
 update(tot_resp[,,]) <- tot_resp[i,j,k] + n_ICU_HR[i,j,k]
@@ -314,7 +349,7 @@ update(tot_N) <- sum(N[,])
 
                                         # Transitions
 
-lambda_ij[,,,,] <- beta[i]*beta_strain[i5] * mixing_matrix[i,k]/beta_norm[i]*transmisibility[k,l,i5]*(pre_sympt_infect*P[k,l,i5] + symp_trans[k,l,i5]*(I[k,l,i5] ) + asympt_infect*A[k,l,i5]) #I_imp[j]*susceptibility[i,j,i5]
+lambda_ij[,,,,] <- beta[i,j]*beta_strain[i5] * mixing_matrix[i,k]/beta_norm[i]*transmisibility[k,l,i5]*(pre_sympt_infect*P[k,l,i5] + symp_trans[k,l,i5]*(I[k,l,i5] ) + asympt_infect*A[k,l,i5]) #I_imp[j]*susceptibility[i,j,i5]
 
 #initial(lambda[,,,,]) <- 0
 #update(lambda[,,,,]) <- lambda_ij[i,j,k,l,i5]
@@ -331,7 +366,7 @@ lambda_ij[,,,,] <- beta[i]*beta_strain[i5] * mixing_matrix[i,k]/beta_norm[i]*tra
 ## mig_R[,] <- migration_matrix[i,j]*R[j]/reg_pop_long[j]
 
 ## Initial states:
-initial(log_beta) <- 0
+initial(log_beta) <- log_beta_ini
 initial(beta_thresh) <- threshold_ini
 initial(S[,]) <- S_ini[i,j] # will be user-defined
 initial(Ea[,,]) <-  Ea_ini[i,j,k]
@@ -356,6 +391,7 @@ initial(D[,,]) <-  D_ini[i,j,k]
 #initial(Ni[,,]) <-N[i,j,k] 
 initial(tot_N) <- 0
 initial(hosp_inc[]) <- 0
+initial(tot_hosp_inc) <- 0
 initial(tot_infected[,,]) <- tot_infected_ini[i,j,k]
 initial(tot_hosp[,,]) <- tot_hosp_ini[i,j,k]
 initial(tot_resp[,,]) <- tot_resp_ini[i,j,k]
@@ -544,10 +580,9 @@ tot_resp_ini[,,] <- user(0)
 tot_vac_ini[,] <- user(0)
 #reg_pop_long[,,] <- user()
 beta_norm[] <- user(0)
+log_beta_ini <- user()
 #MISC_ini[,,] <- user(0)
 #MISC_ICU_ini[,,] <- user(0)
 #MISC_ICU_H_ini[,,] <- user(0)
 #PRE_MISC_ini[,,] <- user(0)
 #tot_misc_ini[,,] <- user(0)
-
-

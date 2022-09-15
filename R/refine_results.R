@@ -108,7 +108,8 @@ add_per_vac <- function(res, key, params){
 
 
 
-
+#'
+#' @export
 refine_results_odin <- function(res, params){
   d <- res
                                         #  res <- data.table(res)
@@ -244,6 +245,8 @@ refine_results_odin <- function(res, params){
 }
 
 
+#'
+#' @export
 refine_results_odin_dust <- function(res, params, N_threads){
 
                                         #  refined <- lapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params, n, N_reg, N_age, N_wax))
@@ -270,6 +273,27 @@ fix_index <- function(index){
   return(ind)
 
 }
+
+to_results_dt <- function(res, model, filter_dt=FALSE){
+  if(class(model$info()) == "list"){
+    dust_index <- model$info()[[1]]$index
+  }else{
+    dust_index <- model$info()$index
+  }
+  results <- list()
+  for(i in 1:dim(res)[2]){
+    res_t <- res[,i,]
+    res_t <- t(res_t[1:dim(res_t)[1],])
+    colnames(res_t) <- fix_index(dust_index)
+    results[[length(results) + 1]] <- as.data.table(res_t) %>% dplyr::mutate(sim=i)
+  }
+  results <- rbindlist(results)
+  if (filter_dt){
+    results <- results[time %in% min(results$time):max(results$time)]
+  }
+  return(results)
+}
+
 refine_one_sim <- function(res, params,n){
   res <- t(res[1:dim(res)[1],])
   colnames(res) <- fix_index(params$dust_index)

@@ -98,10 +98,10 @@ extern "C" SEXP _metapop_dust_cpu_metapop_set_rng_state(SEXP ptr, SEXP rng_state
   END_CPP11
 }
 // metapop.cpp
-SEXP dust_cpu_metapop_set_data(SEXP ptr, cpp11::list data);
-extern "C" SEXP _metapop_dust_cpu_metapop_set_data(SEXP ptr, SEXP data) {
+SEXP dust_cpu_metapop_set_data(SEXP ptr, cpp11::list data, bool shared);
+extern "C" SEXP _metapop_dust_cpu_metapop_set_data(SEXP ptr, SEXP data, SEXP shared) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_metapop_set_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(data)));
+    return cpp11::as_sexp(dust_cpu_metapop_set_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(data), cpp11::as_cpp<cpp11::decay_t<bool>>(shared)));
   END_CPP11
 }
 // metapop.cpp
@@ -112,10 +112,10 @@ extern "C" SEXP _metapop_dust_cpu_metapop_compare_data(SEXP ptr) {
   END_CPP11
 }
 // metapop.cpp
-SEXP dust_cpu_metapop_filter(SEXP ptr, bool save_trajectories, cpp11::sexp step_snapshot);
-extern "C" SEXP _metapop_dust_cpu_metapop_filter(SEXP ptr, SEXP save_trajectories, SEXP step_snapshot) {
+SEXP dust_cpu_metapop_filter(SEXP ptr, SEXP step_end, bool save_trajectories, cpp11::sexp step_snapshot, cpp11::sexp min_log_likelihood);
+extern "C" SEXP _metapop_dust_cpu_metapop_filter(SEXP ptr, SEXP step_end, SEXP save_trajectories, SEXP step_snapshot, SEXP min_log_likelihood) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_metapop_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot)));
+    return cpp11::as_sexp(dust_cpu_metapop_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(step_end), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(min_log_likelihood)));
   END_CPP11
 }
 // metapop.cpp
@@ -226,10 +226,10 @@ extern "C" SEXP _metapop_dust_cpu_metapopfull_set_rng_state(SEXP ptr, SEXP rng_s
   END_CPP11
 }
 // metapopfull.cpp
-SEXP dust_cpu_metapopfull_set_data(SEXP ptr, cpp11::list data);
-extern "C" SEXP _metapop_dust_cpu_metapopfull_set_data(SEXP ptr, SEXP data) {
+SEXP dust_cpu_metapopfull_set_data(SEXP ptr, cpp11::list data, bool shared);
+extern "C" SEXP _metapop_dust_cpu_metapopfull_set_data(SEXP ptr, SEXP data, SEXP shared) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_metapopfull_set_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(data)));
+    return cpp11::as_sexp(dust_cpu_metapopfull_set_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(data), cpp11::as_cpp<cpp11::decay_t<bool>>(shared)));
   END_CPP11
 }
 // metapopfull.cpp
@@ -240,10 +240,10 @@ extern "C" SEXP _metapop_dust_cpu_metapopfull_compare_data(SEXP ptr) {
   END_CPP11
 }
 // metapopfull.cpp
-SEXP dust_cpu_metapopfull_filter(SEXP ptr, bool save_trajectories, cpp11::sexp step_snapshot);
-extern "C" SEXP _metapop_dust_cpu_metapopfull_filter(SEXP ptr, SEXP save_trajectories, SEXP step_snapshot) {
+SEXP dust_cpu_metapopfull_filter(SEXP ptr, SEXP step_end, bool save_trajectories, cpp11::sexp step_snapshot, cpp11::sexp min_log_likelihood);
+extern "C" SEXP _metapop_dust_cpu_metapopfull_filter(SEXP ptr, SEXP step_end, SEXP save_trajectories, SEXP step_snapshot, SEXP min_log_likelihood) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_metapopfull_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot)));
+    return cpp11::as_sexp(dust_cpu_metapopfull_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(step_end), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(min_log_likelihood)));
   END_CPP11
 }
 // metapopfull.cpp
@@ -354,10 +354,10 @@ extern "C" SEXP _metapop_dust_cpu_mod_set_rng_state(SEXP ptr, SEXP rng_state) {
   END_CPP11
 }
 // mod.cpp
-SEXP dust_cpu_mod_set_data(SEXP ptr, cpp11::list data);
-extern "C" SEXP _metapop_dust_cpu_mod_set_data(SEXP ptr, SEXP data) {
+SEXP dust_cpu_mod_set_data(SEXP ptr, cpp11::list data, bool shared);
+extern "C" SEXP _metapop_dust_cpu_mod_set_data(SEXP ptr, SEXP data, SEXP shared) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_mod_set_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(data)));
+    return cpp11::as_sexp(dust_cpu_mod_set_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(data), cpp11::as_cpp<cpp11::decay_t<bool>>(shared)));
   END_CPP11
 }
 // mod.cpp
@@ -368,10 +368,10 @@ extern "C" SEXP _metapop_dust_cpu_mod_compare_data(SEXP ptr) {
   END_CPP11
 }
 // mod.cpp
-SEXP dust_cpu_mod_filter(SEXP ptr, bool save_trajectories, cpp11::sexp step_snapshot);
-extern "C" SEXP _metapop_dust_cpu_mod_filter(SEXP ptr, SEXP save_trajectories, SEXP step_snapshot) {
+SEXP dust_cpu_mod_filter(SEXP ptr, SEXP step_end, bool save_trajectories, cpp11::sexp step_snapshot, cpp11::sexp min_log_likelihood);
+extern "C" SEXP _metapop_dust_cpu_mod_filter(SEXP ptr, SEXP step_end, SEXP save_trajectories, SEXP step_snapshot, SEXP min_log_likelihood) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_mod_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot)));
+    return cpp11::as_sexp(dust_cpu_mod_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(step_end), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(min_log_likelihood)));
   END_CPP11
 }
 // mod.cpp
@@ -482,10 +482,10 @@ extern "C" SEXP _metapop_dust_cpu_model_set_rng_state(SEXP ptr, SEXP rng_state) 
   END_CPP11
 }
 // model.cpp
-SEXP dust_cpu_model_set_data(SEXP ptr, cpp11::list data);
-extern "C" SEXP _metapop_dust_cpu_model_set_data(SEXP ptr, SEXP data) {
+SEXP dust_cpu_model_set_data(SEXP ptr, cpp11::list data, bool shared);
+extern "C" SEXP _metapop_dust_cpu_model_set_data(SEXP ptr, SEXP data, SEXP shared) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_model_set_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(data)));
+    return cpp11::as_sexp(dust_cpu_model_set_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(data), cpp11::as_cpp<cpp11::decay_t<bool>>(shared)));
   END_CPP11
 }
 // model.cpp
@@ -496,10 +496,10 @@ extern "C" SEXP _metapop_dust_cpu_model_compare_data(SEXP ptr) {
   END_CPP11
 }
 // model.cpp
-SEXP dust_cpu_model_filter(SEXP ptr, bool save_trajectories, cpp11::sexp step_snapshot);
-extern "C" SEXP _metapop_dust_cpu_model_filter(SEXP ptr, SEXP save_trajectories, SEXP step_snapshot) {
+SEXP dust_cpu_model_filter(SEXP ptr, SEXP step_end, bool save_trajectories, cpp11::sexp step_snapshot, cpp11::sexp min_log_likelihood);
+extern "C" SEXP _metapop_dust_cpu_model_filter(SEXP ptr, SEXP step_end, SEXP save_trajectories, SEXP step_snapshot, SEXP min_log_likelihood) {
   BEGIN_CPP11
-    return cpp11::as_sexp(dust_cpu_model_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot)));
+    return cpp11::as_sexp(dust_cpu_model_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(step_end), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(min_log_likelihood)));
   END_CPP11
 }
 // model.cpp
@@ -517,18 +517,274 @@ extern "C" SEXP _metapop_dust_cpu_model_n_state(SEXP ptr) {
     return cpp11::as_sexp(dust_cpu_model_n_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
   END_CPP11
 }
+// std_model.cpp
+cpp11::sexp dust_std_model_capabilities();
+extern "C" SEXP _metapop_dust_std_model_capabilities() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_std_model_capabilities());
+  END_CPP11
+}
+// std_model.cpp
+cpp11::sexp dust_std_model_gpu_info();
+extern "C" SEXP _metapop_dust_std_model_gpu_info() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_std_model_gpu_info());
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_alloc(cpp11::list r_pars, bool pars_multi, size_t step, cpp11::sexp r_n_particles, size_t n_threads, cpp11::sexp r_seed, bool deterministic, cpp11::sexp gpu_config);
+extern "C" SEXP _metapop_dust_cpu_std_model_alloc(SEXP r_pars, SEXP pars_multi, SEXP step, SEXP r_n_particles, SEXP n_threads, SEXP r_seed, SEXP deterministic, SEXP gpu_config) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_alloc(cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(r_pars), cpp11::as_cpp<cpp11::decay_t<bool>>(pars_multi), cpp11::as_cpp<cpp11::decay_t<size_t>>(step), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_n_particles), cpp11::as_cpp<cpp11::decay_t<size_t>>(n_threads), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_seed), cpp11::as_cpp<cpp11::decay_t<bool>>(deterministic), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(gpu_config)));
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_run(SEXP ptr, size_t step_end);
+extern "C" SEXP _metapop_dust_cpu_std_model_run(SEXP ptr, SEXP step_end) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_run(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<size_t>>(step_end)));
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_simulate(SEXP ptr, cpp11::sexp step_end);
+extern "C" SEXP _metapop_dust_cpu_std_model_simulate(SEXP ptr, SEXP step_end) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_simulate(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_end)));
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_set_index(SEXP ptr, cpp11::sexp r_index);
+extern "C" SEXP _metapop_dust_cpu_std_model_set_index(SEXP ptr, SEXP r_index) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_set_index(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_index)));
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_update_state(SEXP ptr, SEXP r_pars, SEXP r_state, SEXP r_step, SEXP r_set_initial_state);
+extern "C" SEXP _metapop_dust_cpu_std_model_update_state(SEXP ptr, SEXP r_pars, SEXP r_state, SEXP r_step, SEXP r_set_initial_state) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_update_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_pars), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_state), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_step), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_set_initial_state)));
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_state(SEXP ptr, SEXP r_index);
+extern "C" SEXP _metapop_dust_cpu_std_model_state(SEXP ptr, SEXP r_index) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_index)));
+  END_CPP11
+}
+// std_model.cpp
+size_t dust_cpu_std_model_step(SEXP ptr);
+extern "C" SEXP _metapop_dust_cpu_std_model_step(SEXP ptr) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_step(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
+  END_CPP11
+}
+// std_model.cpp
+void dust_cpu_std_model_reorder(SEXP ptr, cpp11::sexp r_index);
+extern "C" SEXP _metapop_dust_cpu_std_model_reorder(SEXP ptr, SEXP r_index) {
+  BEGIN_CPP11
+    dust_cpu_std_model_reorder(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_index));
+    return R_NilValue;
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_resample(SEXP ptr, cpp11::doubles r_weights);
+extern "C" SEXP _metapop_dust_cpu_std_model_resample(SEXP ptr, SEXP r_weights) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_resample(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::doubles>>(r_weights)));
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_rng_state(SEXP ptr, bool first_only, bool last_only);
+extern "C" SEXP _metapop_dust_cpu_std_model_rng_state(SEXP ptr, SEXP first_only, SEXP last_only) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_rng_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<bool>>(first_only), cpp11::as_cpp<cpp11::decay_t<bool>>(last_only)));
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_set_rng_state(SEXP ptr, cpp11::raws rng_state);
+extern "C" SEXP _metapop_dust_cpu_std_model_set_rng_state(SEXP ptr, SEXP rng_state) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_set_rng_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::raws>>(rng_state)));
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_set_data(SEXP ptr, cpp11::list data, bool shared);
+extern "C" SEXP _metapop_dust_cpu_std_model_set_data(SEXP ptr, SEXP data, SEXP shared) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_set_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(data), cpp11::as_cpp<cpp11::decay_t<bool>>(shared)));
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_compare_data(SEXP ptr);
+extern "C" SEXP _metapop_dust_cpu_std_model_compare_data(SEXP ptr) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_compare_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
+  END_CPP11
+}
+// std_model.cpp
+SEXP dust_cpu_std_model_filter(SEXP ptr, SEXP step_end, bool save_trajectories, cpp11::sexp step_snapshot, cpp11::sexp min_log_likelihood);
+extern "C" SEXP _metapop_dust_cpu_std_model_filter(SEXP ptr, SEXP step_end, SEXP save_trajectories, SEXP step_snapshot, SEXP min_log_likelihood) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(step_end), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(min_log_likelihood)));
+  END_CPP11
+}
+// std_model.cpp
+void dust_cpu_std_model_set_n_threads(SEXP ptr, int n_threads);
+extern "C" SEXP _metapop_dust_cpu_std_model_set_n_threads(SEXP ptr, SEXP n_threads) {
+  BEGIN_CPP11
+    dust_cpu_std_model_set_n_threads(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<int>>(n_threads));
+    return R_NilValue;
+  END_CPP11
+}
+// std_model.cpp
+int dust_cpu_std_model_n_state(SEXP ptr);
+extern "C" SEXP _metapop_dust_cpu_std_model_n_state(SEXP ptr) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_std_model_n_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
+  END_CPP11
+}
+// stdmodel.cpp
+cpp11::sexp dust_stdmodel_capabilities();
+extern "C" SEXP _metapop_dust_stdmodel_capabilities() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_stdmodel_capabilities());
+  END_CPP11
+}
+// stdmodel.cpp
+cpp11::sexp dust_stdmodel_gpu_info();
+extern "C" SEXP _metapop_dust_stdmodel_gpu_info() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_stdmodel_gpu_info());
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_alloc(cpp11::list r_pars, bool pars_multi, size_t step, cpp11::sexp r_n_particles, size_t n_threads, cpp11::sexp r_seed, bool deterministic, cpp11::sexp gpu_config);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_alloc(SEXP r_pars, SEXP pars_multi, SEXP step, SEXP r_n_particles, SEXP n_threads, SEXP r_seed, SEXP deterministic, SEXP gpu_config) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_alloc(cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(r_pars), cpp11::as_cpp<cpp11::decay_t<bool>>(pars_multi), cpp11::as_cpp<cpp11::decay_t<size_t>>(step), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_n_particles), cpp11::as_cpp<cpp11::decay_t<size_t>>(n_threads), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_seed), cpp11::as_cpp<cpp11::decay_t<bool>>(deterministic), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(gpu_config)));
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_run(SEXP ptr, size_t step_end);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_run(SEXP ptr, SEXP step_end) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_run(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<size_t>>(step_end)));
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_simulate(SEXP ptr, cpp11::sexp step_end);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_simulate(SEXP ptr, SEXP step_end) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_simulate(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_end)));
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_set_index(SEXP ptr, cpp11::sexp r_index);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_set_index(SEXP ptr, SEXP r_index) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_set_index(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_index)));
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_update_state(SEXP ptr, SEXP r_pars, SEXP r_state, SEXP r_step, SEXP r_set_initial_state);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_update_state(SEXP ptr, SEXP r_pars, SEXP r_state, SEXP r_step, SEXP r_set_initial_state) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_update_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_pars), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_state), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_step), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_set_initial_state)));
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_state(SEXP ptr, SEXP r_index);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_state(SEXP ptr, SEXP r_index) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(r_index)));
+  END_CPP11
+}
+// stdmodel.cpp
+size_t dust_cpu_stdmodel_step(SEXP ptr);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_step(SEXP ptr) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_step(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
+  END_CPP11
+}
+// stdmodel.cpp
+void dust_cpu_stdmodel_reorder(SEXP ptr, cpp11::sexp r_index);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_reorder(SEXP ptr, SEXP r_index) {
+  BEGIN_CPP11
+    dust_cpu_stdmodel_reorder(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_index));
+    return R_NilValue;
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_resample(SEXP ptr, cpp11::doubles r_weights);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_resample(SEXP ptr, SEXP r_weights) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_resample(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::doubles>>(r_weights)));
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_rng_state(SEXP ptr, bool first_only, bool last_only);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_rng_state(SEXP ptr, SEXP first_only, SEXP last_only) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_rng_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<bool>>(first_only), cpp11::as_cpp<cpp11::decay_t<bool>>(last_only)));
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_set_rng_state(SEXP ptr, cpp11::raws rng_state);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_set_rng_state(SEXP ptr, SEXP rng_state) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_set_rng_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::raws>>(rng_state)));
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_set_data(SEXP ptr, cpp11::list data, bool shared);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_set_data(SEXP ptr, SEXP data, SEXP shared) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_set_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(data), cpp11::as_cpp<cpp11::decay_t<bool>>(shared)));
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_compare_data(SEXP ptr);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_compare_data(SEXP ptr) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_compare_data(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
+  END_CPP11
+}
+// stdmodel.cpp
+SEXP dust_cpu_stdmodel_filter(SEXP ptr, SEXP step_end, bool save_trajectories, cpp11::sexp step_snapshot, cpp11::sexp min_log_likelihood);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_filter(SEXP ptr, SEXP step_end, SEXP save_trajectories, SEXP step_snapshot, SEXP min_log_likelihood) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_filter(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<SEXP>>(step_end), cpp11::as_cpp<cpp11::decay_t<bool>>(save_trajectories), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(step_snapshot), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(min_log_likelihood)));
+  END_CPP11
+}
+// stdmodel.cpp
+void dust_cpu_stdmodel_set_n_threads(SEXP ptr, int n_threads);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_set_n_threads(SEXP ptr, SEXP n_threads) {
+  BEGIN_CPP11
+    dust_cpu_stdmodel_set_n_threads(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr), cpp11::as_cpp<cpp11::decay_t<int>>(n_threads));
+    return R_NilValue;
+  END_CPP11
+}
+// stdmodel.cpp
+int dust_cpu_stdmodel_n_state(SEXP ptr);
+extern "C" SEXP _metapop_dust_cpu_stdmodel_n_state(SEXP ptr) {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_stdmodel_n_state(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
+  END_CPP11
+}
 
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
     {"_metapop_dust_cpu_metapop_alloc",             (DL_FUNC) &_metapop_dust_cpu_metapop_alloc,             8},
     {"_metapop_dust_cpu_metapop_compare_data",      (DL_FUNC) &_metapop_dust_cpu_metapop_compare_data,      1},
-    {"_metapop_dust_cpu_metapop_filter",            (DL_FUNC) &_metapop_dust_cpu_metapop_filter,            3},
+    {"_metapop_dust_cpu_metapop_filter",            (DL_FUNC) &_metapop_dust_cpu_metapop_filter,            5},
     {"_metapop_dust_cpu_metapop_n_state",           (DL_FUNC) &_metapop_dust_cpu_metapop_n_state,           1},
     {"_metapop_dust_cpu_metapop_reorder",           (DL_FUNC) &_metapop_dust_cpu_metapop_reorder,           2},
     {"_metapop_dust_cpu_metapop_resample",          (DL_FUNC) &_metapop_dust_cpu_metapop_resample,          2},
     {"_metapop_dust_cpu_metapop_rng_state",         (DL_FUNC) &_metapop_dust_cpu_metapop_rng_state,         3},
     {"_metapop_dust_cpu_metapop_run",               (DL_FUNC) &_metapop_dust_cpu_metapop_run,               2},
-    {"_metapop_dust_cpu_metapop_set_data",          (DL_FUNC) &_metapop_dust_cpu_metapop_set_data,          2},
+    {"_metapop_dust_cpu_metapop_set_data",          (DL_FUNC) &_metapop_dust_cpu_metapop_set_data,          3},
     {"_metapop_dust_cpu_metapop_set_index",         (DL_FUNC) &_metapop_dust_cpu_metapop_set_index,         2},
     {"_metapop_dust_cpu_metapop_set_n_threads",     (DL_FUNC) &_metapop_dust_cpu_metapop_set_n_threads,     2},
     {"_metapop_dust_cpu_metapop_set_rng_state",     (DL_FUNC) &_metapop_dust_cpu_metapop_set_rng_state,     2},
@@ -538,13 +794,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_metapop_dust_cpu_metapop_update_state",      (DL_FUNC) &_metapop_dust_cpu_metapop_update_state,      5},
     {"_metapop_dust_cpu_metapopfull_alloc",         (DL_FUNC) &_metapop_dust_cpu_metapopfull_alloc,         8},
     {"_metapop_dust_cpu_metapopfull_compare_data",  (DL_FUNC) &_metapop_dust_cpu_metapopfull_compare_data,  1},
-    {"_metapop_dust_cpu_metapopfull_filter",        (DL_FUNC) &_metapop_dust_cpu_metapopfull_filter,        3},
+    {"_metapop_dust_cpu_metapopfull_filter",        (DL_FUNC) &_metapop_dust_cpu_metapopfull_filter,        5},
     {"_metapop_dust_cpu_metapopfull_n_state",       (DL_FUNC) &_metapop_dust_cpu_metapopfull_n_state,       1},
     {"_metapop_dust_cpu_metapopfull_reorder",       (DL_FUNC) &_metapop_dust_cpu_metapopfull_reorder,       2},
     {"_metapop_dust_cpu_metapopfull_resample",      (DL_FUNC) &_metapop_dust_cpu_metapopfull_resample,      2},
     {"_metapop_dust_cpu_metapopfull_rng_state",     (DL_FUNC) &_metapop_dust_cpu_metapopfull_rng_state,     3},
     {"_metapop_dust_cpu_metapopfull_run",           (DL_FUNC) &_metapop_dust_cpu_metapopfull_run,           2},
-    {"_metapop_dust_cpu_metapopfull_set_data",      (DL_FUNC) &_metapop_dust_cpu_metapopfull_set_data,      2},
+    {"_metapop_dust_cpu_metapopfull_set_data",      (DL_FUNC) &_metapop_dust_cpu_metapopfull_set_data,      3},
     {"_metapop_dust_cpu_metapopfull_set_index",     (DL_FUNC) &_metapop_dust_cpu_metapopfull_set_index,     2},
     {"_metapop_dust_cpu_metapopfull_set_n_threads", (DL_FUNC) &_metapop_dust_cpu_metapopfull_set_n_threads, 2},
     {"_metapop_dust_cpu_metapopfull_set_rng_state", (DL_FUNC) &_metapop_dust_cpu_metapopfull_set_rng_state, 2},
@@ -554,13 +810,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_metapop_dust_cpu_metapopfull_update_state",  (DL_FUNC) &_metapop_dust_cpu_metapopfull_update_state,  5},
     {"_metapop_dust_cpu_mod_alloc",                 (DL_FUNC) &_metapop_dust_cpu_mod_alloc,                 8},
     {"_metapop_dust_cpu_mod_compare_data",          (DL_FUNC) &_metapop_dust_cpu_mod_compare_data,          1},
-    {"_metapop_dust_cpu_mod_filter",                (DL_FUNC) &_metapop_dust_cpu_mod_filter,                3},
+    {"_metapop_dust_cpu_mod_filter",                (DL_FUNC) &_metapop_dust_cpu_mod_filter,                5},
     {"_metapop_dust_cpu_mod_n_state",               (DL_FUNC) &_metapop_dust_cpu_mod_n_state,               1},
     {"_metapop_dust_cpu_mod_reorder",               (DL_FUNC) &_metapop_dust_cpu_mod_reorder,               2},
     {"_metapop_dust_cpu_mod_resample",              (DL_FUNC) &_metapop_dust_cpu_mod_resample,              2},
     {"_metapop_dust_cpu_mod_rng_state",             (DL_FUNC) &_metapop_dust_cpu_mod_rng_state,             3},
     {"_metapop_dust_cpu_mod_run",                   (DL_FUNC) &_metapop_dust_cpu_mod_run,                   2},
-    {"_metapop_dust_cpu_mod_set_data",              (DL_FUNC) &_metapop_dust_cpu_mod_set_data,              2},
+    {"_metapop_dust_cpu_mod_set_data",              (DL_FUNC) &_metapop_dust_cpu_mod_set_data,              3},
     {"_metapop_dust_cpu_mod_set_index",             (DL_FUNC) &_metapop_dust_cpu_mod_set_index,             2},
     {"_metapop_dust_cpu_mod_set_n_threads",         (DL_FUNC) &_metapop_dust_cpu_mod_set_n_threads,         2},
     {"_metapop_dust_cpu_mod_set_rng_state",         (DL_FUNC) &_metapop_dust_cpu_mod_set_rng_state,         2},
@@ -570,13 +826,13 @@ static const R_CallMethodDef CallEntries[] = {
     {"_metapop_dust_cpu_mod_update_state",          (DL_FUNC) &_metapop_dust_cpu_mod_update_state,          5},
     {"_metapop_dust_cpu_model_alloc",               (DL_FUNC) &_metapop_dust_cpu_model_alloc,               8},
     {"_metapop_dust_cpu_model_compare_data",        (DL_FUNC) &_metapop_dust_cpu_model_compare_data,        1},
-    {"_metapop_dust_cpu_model_filter",              (DL_FUNC) &_metapop_dust_cpu_model_filter,              3},
+    {"_metapop_dust_cpu_model_filter",              (DL_FUNC) &_metapop_dust_cpu_model_filter,              5},
     {"_metapop_dust_cpu_model_n_state",             (DL_FUNC) &_metapop_dust_cpu_model_n_state,             1},
     {"_metapop_dust_cpu_model_reorder",             (DL_FUNC) &_metapop_dust_cpu_model_reorder,             2},
     {"_metapop_dust_cpu_model_resample",            (DL_FUNC) &_metapop_dust_cpu_model_resample,            2},
     {"_metapop_dust_cpu_model_rng_state",           (DL_FUNC) &_metapop_dust_cpu_model_rng_state,           3},
     {"_metapop_dust_cpu_model_run",                 (DL_FUNC) &_metapop_dust_cpu_model_run,                 2},
-    {"_metapop_dust_cpu_model_set_data",            (DL_FUNC) &_metapop_dust_cpu_model_set_data,            2},
+    {"_metapop_dust_cpu_model_set_data",            (DL_FUNC) &_metapop_dust_cpu_model_set_data,            3},
     {"_metapop_dust_cpu_model_set_index",           (DL_FUNC) &_metapop_dust_cpu_model_set_index,           2},
     {"_metapop_dust_cpu_model_set_n_threads",       (DL_FUNC) &_metapop_dust_cpu_model_set_n_threads,       2},
     {"_metapop_dust_cpu_model_set_rng_state",       (DL_FUNC) &_metapop_dust_cpu_model_set_rng_state,       2},
@@ -584,6 +840,38 @@ static const R_CallMethodDef CallEntries[] = {
     {"_metapop_dust_cpu_model_state",               (DL_FUNC) &_metapop_dust_cpu_model_state,               2},
     {"_metapop_dust_cpu_model_step",                (DL_FUNC) &_metapop_dust_cpu_model_step,                1},
     {"_metapop_dust_cpu_model_update_state",        (DL_FUNC) &_metapop_dust_cpu_model_update_state,        5},
+    {"_metapop_dust_cpu_std_model_alloc",           (DL_FUNC) &_metapop_dust_cpu_std_model_alloc,           8},
+    {"_metapop_dust_cpu_std_model_compare_data",    (DL_FUNC) &_metapop_dust_cpu_std_model_compare_data,    1},
+    {"_metapop_dust_cpu_std_model_filter",          (DL_FUNC) &_metapop_dust_cpu_std_model_filter,          5},
+    {"_metapop_dust_cpu_std_model_n_state",         (DL_FUNC) &_metapop_dust_cpu_std_model_n_state,         1},
+    {"_metapop_dust_cpu_std_model_reorder",         (DL_FUNC) &_metapop_dust_cpu_std_model_reorder,         2},
+    {"_metapop_dust_cpu_std_model_resample",        (DL_FUNC) &_metapop_dust_cpu_std_model_resample,        2},
+    {"_metapop_dust_cpu_std_model_rng_state",       (DL_FUNC) &_metapop_dust_cpu_std_model_rng_state,       3},
+    {"_metapop_dust_cpu_std_model_run",             (DL_FUNC) &_metapop_dust_cpu_std_model_run,             2},
+    {"_metapop_dust_cpu_std_model_set_data",        (DL_FUNC) &_metapop_dust_cpu_std_model_set_data,        3},
+    {"_metapop_dust_cpu_std_model_set_index",       (DL_FUNC) &_metapop_dust_cpu_std_model_set_index,       2},
+    {"_metapop_dust_cpu_std_model_set_n_threads",   (DL_FUNC) &_metapop_dust_cpu_std_model_set_n_threads,   2},
+    {"_metapop_dust_cpu_std_model_set_rng_state",   (DL_FUNC) &_metapop_dust_cpu_std_model_set_rng_state,   2},
+    {"_metapop_dust_cpu_std_model_simulate",        (DL_FUNC) &_metapop_dust_cpu_std_model_simulate,        2},
+    {"_metapop_dust_cpu_std_model_state",           (DL_FUNC) &_metapop_dust_cpu_std_model_state,           2},
+    {"_metapop_dust_cpu_std_model_step",            (DL_FUNC) &_metapop_dust_cpu_std_model_step,            1},
+    {"_metapop_dust_cpu_std_model_update_state",    (DL_FUNC) &_metapop_dust_cpu_std_model_update_state,    5},
+    {"_metapop_dust_cpu_stdmodel_alloc",            (DL_FUNC) &_metapop_dust_cpu_stdmodel_alloc,            8},
+    {"_metapop_dust_cpu_stdmodel_compare_data",     (DL_FUNC) &_metapop_dust_cpu_stdmodel_compare_data,     1},
+    {"_metapop_dust_cpu_stdmodel_filter",           (DL_FUNC) &_metapop_dust_cpu_stdmodel_filter,           5},
+    {"_metapop_dust_cpu_stdmodel_n_state",          (DL_FUNC) &_metapop_dust_cpu_stdmodel_n_state,          1},
+    {"_metapop_dust_cpu_stdmodel_reorder",          (DL_FUNC) &_metapop_dust_cpu_stdmodel_reorder,          2},
+    {"_metapop_dust_cpu_stdmodel_resample",         (DL_FUNC) &_metapop_dust_cpu_stdmodel_resample,         2},
+    {"_metapop_dust_cpu_stdmodel_rng_state",        (DL_FUNC) &_metapop_dust_cpu_stdmodel_rng_state,        3},
+    {"_metapop_dust_cpu_stdmodel_run",              (DL_FUNC) &_metapop_dust_cpu_stdmodel_run,              2},
+    {"_metapop_dust_cpu_stdmodel_set_data",         (DL_FUNC) &_metapop_dust_cpu_stdmodel_set_data,         3},
+    {"_metapop_dust_cpu_stdmodel_set_index",        (DL_FUNC) &_metapop_dust_cpu_stdmodel_set_index,        2},
+    {"_metapop_dust_cpu_stdmodel_set_n_threads",    (DL_FUNC) &_metapop_dust_cpu_stdmodel_set_n_threads,    2},
+    {"_metapop_dust_cpu_stdmodel_set_rng_state",    (DL_FUNC) &_metapop_dust_cpu_stdmodel_set_rng_state,    2},
+    {"_metapop_dust_cpu_stdmodel_simulate",         (DL_FUNC) &_metapop_dust_cpu_stdmodel_simulate,         2},
+    {"_metapop_dust_cpu_stdmodel_state",            (DL_FUNC) &_metapop_dust_cpu_stdmodel_state,            2},
+    {"_metapop_dust_cpu_stdmodel_step",             (DL_FUNC) &_metapop_dust_cpu_stdmodel_step,             1},
+    {"_metapop_dust_cpu_stdmodel_update_state",     (DL_FUNC) &_metapop_dust_cpu_stdmodel_update_state,     5},
     {"_metapop_dust_metapop_capabilities",          (DL_FUNC) &_metapop_dust_metapop_capabilities,          0},
     {"_metapop_dust_metapop_gpu_info",              (DL_FUNC) &_metapop_dust_metapop_gpu_info,              0},
     {"_metapop_dust_metapopfull_capabilities",      (DL_FUNC) &_metapop_dust_metapopfull_capabilities,      0},
@@ -592,6 +880,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_metapop_dust_mod_gpu_info",                  (DL_FUNC) &_metapop_dust_mod_gpu_info,                  0},
     {"_metapop_dust_model_capabilities",            (DL_FUNC) &_metapop_dust_model_capabilities,            0},
     {"_metapop_dust_model_gpu_info",                (DL_FUNC) &_metapop_dust_model_gpu_info,                0},
+    {"_metapop_dust_std_model_capabilities",        (DL_FUNC) &_metapop_dust_std_model_capabilities,        0},
+    {"_metapop_dust_std_model_gpu_info",            (DL_FUNC) &_metapop_dust_std_model_gpu_info,            0},
+    {"_metapop_dust_stdmodel_capabilities",         (DL_FUNC) &_metapop_dust_stdmodel_capabilities,         0},
+    {"_metapop_dust_stdmodel_gpu_info",             (DL_FUNC) &_metapop_dust_stdmodel_gpu_info,             0},
     {NULL, NULL, 0}
 };
 }

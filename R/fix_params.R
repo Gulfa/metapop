@@ -1,5 +1,7 @@
 
-
+#' Combining vaccination parameters
+#'
+#' @export
 fix_params <- function(params, N, n_vac, n_strain, vac_pars){
   params$asympt_frac <- array(params$asympt_frac, dim=c(N, n_vac, n_strain))
   params$sympt_frac <- array(params$sympt_frac, dim=c(N, n_vac, n_strain))
@@ -21,7 +23,9 @@ fix_params <- function(params, N, n_vac, n_strain, vac_pars){
   return(params)
 }
 
-
+#' Change the timestep of the parameters
+#'
+#' @export
 change_dt <- function(params, dt){
 
   params$dt <- dt

@@ -1,10 +1,15 @@
+#' Exporting main model
+#'
+#' @export model
+NULL
 
 #' run_params
 #'
 #' Run the metapopulation model with a set of parameters and a given number of particles and threads.
 #' The number of particles gives the number of samples and threads the number of cores used to sample
-
+#' @export
 run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1", run_params=list(), silent=TRUE, estimate_Rt=FALSE,Rt_per_day=1){
+  params <- fix_beta_mode_params(params)
   if(!silent){
     print(glue::glue("Running {run_name}"))
   }
@@ -28,16 +33,21 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
 
 
   beta <- list()
-  if(params$rand_beta == 1){
+  if(params$beta_mode == 3){
     for(n in 1:N_particles){
       beta[[length(beta) + 1]] <- outer(exp(results[sim==n, log_beta]), params$rand_beta_factors)
     }
   }
-  else if(params$threshold_beta == 1){
+  else if(params$beta_mode == 2){
     for(n in 1:N_particles){
       beta[[length(beta) + 1]] <- outer(results[sim==n, beta_thresh], params$rand_beta_factors)
     }
   }
+  ## else if(params$beta_mode == 4){
+  ##   for(n in 1:N_particles){
+  ##     beta[[length(beta) + 1]] <- results[sim==n, beta_spont_be
+  ##   }
+  ## }
   else{
       for(n in 1:N_particles){
         beta[[length(beta) + 1]] <- params$beta_day
@@ -56,7 +66,9 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
 
 
 
-
+#' Function to run multiple param sets
+#'
+#' @export
 run_param_sets <- function(paramsets, L=100, N_particles=1, N_threads_internal=1, N_threads_external=1, silent=TRUE){
 
   

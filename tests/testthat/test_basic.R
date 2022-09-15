@@ -4,7 +4,7 @@ basic_params <- function(N=9, n_vac=2, L=100, n_strain=1){
     N_steps=L,
     n_vac=n_vac,
     n_strain=n_strain,
-    dt=1,
+    dt=1,## 
     T_waning=array(1e10, dim=c(N, n_vac)),
     vaccinations=array(0,dim=c(L, N, n_vac)),
                                         #    import_vec=rep(0, L),
@@ -12,7 +12,7 @@ basic_params <- function(N=9, n_vac=2, L=100, n_strain=1){
     beta_day=matrix(0.05, ncol=N, nrow=L),
                                         #    vac_time_full_effect=array(14.0, N),
     mixing_matrix=matrix(1.0, nrow=N, ncol=N),
-    tot_vac_ini=rep(0, N),
+    tot_vac_ini=array(0, dim=c(N,n_vac)),
     migration_matrix=matrix(0.0, nrow=N, ncol=N),
     latent_period=3.0,
     beta_strain=rep(1, n_strain),
@@ -74,14 +74,15 @@ basic_params <- function(N=9, n_vac=2, L=100, n_strain=1){
     waning_inf=5e10,
     N_regions=1,
     rand_beta_sd=0.1,
-    rand_beta=0,
-    threshold_beta=0,
     rand_beta_factors=rep(0.05,N),
     beta_cut_peak_param=c(0,0,0,0),
-    dyn_change=c(0,0,0,0),
     age_groups=N,
     change_factor=c(0,0,0,0),
-    threshold=c(100,0)
+    threshold=c(100,0),
+    beta_mode=1,
+    spont_behav_change_params=c(0,0,0,0),
+    expected_health_loss=array(1, dim=c(N,n_vac))
+    
 
   )
 }
@@ -96,7 +97,7 @@ test_that("Conserve N", {
 
 test_that("Random beta", {
   params <- basic_params()
-  params$rand_beta <- 1
+  params$beta_mode <- 3
   results1 <- run_params(params, L=100, 6, 3)
   N_t <- all(results1 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(basic_params()$S_ini) + sum(basic_params()$I_ini))
   expect_true(N_t)
@@ -212,7 +213,7 @@ test_that("Test cut_peak", {
   bv <- 0.05*beta_1*2
   params$beta_day <- params$beta_day*beta_1*2
   results1 <- run_params(params, L=200, 3, 3)
-  params$beta_cut_peak <- 1
+  params$beta_mode <- 5
   params$beta_cut_peak_param <- c(bv, bv*0.2, 0.5,14)
   params$rand_beta_factors <- rep(1,9)
   results2 <- run_params(params, L=200, 3, 3)
@@ -233,40 +234,61 @@ test_that("Test cut_peak", {
   
 })
 
-test_that("Test cut_peak + dynamic change", {
+## test_that("Test cut_peak + dynamic change", {
+##   params <- basic_params(n_vac=1, n_strain=1, L=200)
+##   beta_1 <- fix_beta_large(params, params$S_ini, params$I_ini, 1, beta=params$beta_day[1,], use_eig=TRUE)
+##   bv <- 0.05*beta_1*2
+
+##   params$beta_dynamic_change <- 1
+##   params$dyn_change <- c(bv, 0.5, 0.1,1)
+##   params$rand_beta_factors <- rep(1,9)
+##   results1 <- run_params(params, L=200, 3, 3)
+##   params$beta_cut_peak <- 1
+  
+##   params$beta_cut_peak_param <- c(bv, bv*0.2, 1/2,14)
+##   params$rand_beta_factors <- rep(1,9)
+##   results2 <- run_params(params, L=200, 3, 3)
+##   N_t <- all(results2 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
+##   expect_true(N_t)
+  
+##   expect_gte(mean(results1[t==200,get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+100000)
+  
+## })
+
+
+## test_that("Test dynamic change", {
+##   params <- basic_params(n_vac=1, n_strain=1, L=200)
+
+##   results1 <- run_params(params, L=200, 3, 3)
+##   params$beta_dynamic_change <- 1
+##   params$dyn_change <- c(0.05, 0.5, 0.1,1)
+##   params$rand_beta_factors <- rep(1,9)
+##   results2 <- run_params(params, L=200, 3, 3)
+##   N_t <- all(results2 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
+##   expect_true(N_t)
+  
+##   expect_gte(max(results1[, "incidence"]), max(results2[,get("incidence")]))
+  
+## })
+
+test_that("Test spontaneous behviour change", {
   params <- basic_params(n_vac=1, n_strain=1, L=200)
-  beta_1 <- fix_beta_large(params, params$S_ini, params$I_ini, 1, beta=params$beta_day[1,], use_eig=TRUE)
-  bv <- 0.05*beta_1*2
-
-  params$beta_dynamic_change <- 1
-  params$dyn_change <- c(bv, 0.5, 0.1,1)
-  params$rand_beta_factors <- rep(1,9)
+  params$beta_mode <- 4
+  params$spont_behav_change_params <- c(0.05, 1, 2000, 4/(0.9*2000))
+  params$expected_health_loss <- array(0, dim=c(9,1))
   results1 <- run_params(params, L=200, 3, 3)
-  params$beta_cut_peak <- 1
-  
-  params$beta_cut_peak_param <- c(bv, bv*0.2, 1/2,14)
-  params$rand_beta_factors <- rep(1,9)
+
+  params$expected_health_loss <- array(50000, dim=c(9,1))
   results2 <- run_params(params, L=200, 3, 3)
-  N_t <- all(results2 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
-  expect_true(N_t)
-  
-  expect_gte(mean(results1[t==200,get("tot_infected")]), mean(results2[t==200,get("tot_infected")])+100000)
-  
-})
 
+  params$expected_health_loss <-  array(100000, dim=c(9,1))
+  results3 <- run_params(params, L=200, 3, 3)
 
-test_that("Test dynamic change", {
-  params <- basic_params(n_vac=1, n_strain=1, L=200)
-
-  results1 <- run_params(params, L=200, 3, 3)
-  params$beta_dynamic_change <- 1
-  params$dyn_change <- c(0.05, 0.5, 0.1,1)
-  params$rand_beta_factors <- rep(1,9)
-  results2 <- run_params(params, L=200, 3, 3)
   N_t <- all(results2 %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
   expect_true(N_t)
   
   expect_gte(max(results1[, "incidence"]), max(results2[,get("incidence")]))
+  expect_gte(max(results2[, "incidence"]), max(results3[,get("incidence")]))
   
 })
 
@@ -274,7 +296,7 @@ test_that("Test dynamic change", {
 
 test_that("Test dynamic threshold", {
   params <- basic_params(L=600)
-  params$threshold_beta <- 1
+  params$beta_mode <- 2
   params$threshold <- c(1000,0)
   params$threshold_ini <- 0.04
   params$threshold_max <- 0.04

@@ -3,7 +3,7 @@ Title: Stochastic metapopulation model
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "Gunnar",
-           family = "Ro",
+           family = "Roe",
            role = c("aut", "cre"),
            email = "gunnarroe@gmail.com",
            comment = c(ORCID = "YOUR-ORCID-ID"))
@@ -13,11 +13,10 @@ License: `use_mit_license()`, `use_gpl3_license()` or friends to
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Depends: R (>= 3.1.0)
 Imports:
     dust (>= 0.9.8),
-    mcstate (>= 0.8.0),
     dplyr,
     data.table
 LinkingTo:
@@ -25,7 +24,6 @@ LinkingTo:
     dust (>= 0.9.8)
 SystemRequirements: C++11
 Suggests:
-    EpiEstim,
     distcrete,
     mockery,
     odin (>= 1.1.12),
