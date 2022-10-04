@@ -1,5 +1,5 @@
 dt <- user(1)
-initial(time) <- 0
+initial(time) <- 1
 update(time) <- (step + 1) * dt
 N_steps <- user()
 steps_per_day <- 1/dt
@@ -156,7 +156,7 @@ update(D[,,]) <- D[i,j,k] + n_B_D_D[i,j,k] + n_B_H_D[i,j,k] + n_B_ICU_D[i,j,k]
 
 update(tot_infected[,,]) <-  tot_infected[i,j,k] + n_SE[i,j,k]
   
-update(hosp_inc[]) <- if(step %% (incidence_steps_measurement*steps_per_day==0)) sum(n_IH[i,,]) + sum(n_IICU[i,,]) else hosp_inc[i]+sum(n_IH[i,,]) + sum(n_IICU[i,,])
+update(hosp_inc[]) <- if(step %% (incidence_steps_measurement*steps_per_day)==0) sum(n_IH[i,,]) + sum(n_IICU[i,,]) else hosp_inc[i]+sum(n_IH[i,,]) + sum(n_IICU[i,,])
 update(tot_hosp_inc) <- sum(hosp_inc[])
 update(tot_hosp[,,]) <-  tot_hosp[i,j,k] + n_IH[i,j,k] + n_IICU[i,j,k]
 

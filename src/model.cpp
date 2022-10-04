@@ -1358,7 +1358,7 @@ public:
       }
     }
     for (int i = 1; i <= shared->dim_hosp_inc; ++i) {
-      state_next[11 + i - 1] = (fmodr<real_type>(step, (shared->incidence_steps_measurement * shared->steps_per_day == 0)) ? odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12) : hosp_inc[i - 1] + odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12));
+      state_next[11 + i - 1] = (fmodr<real_type>(step, (shared->incidence_steps_measurement * shared->steps_per_day)) == 0 ? odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12) : hosp_inc[i - 1] + odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12));
     }
     for (int i = 1; i <= shared->dim_tot_hosp_1; ++i) {
       for (int j = 1; j <= shared->dim_tot_hosp_2; ++j) {
@@ -1744,7 +1744,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->initial_incidence_int = 0;
   shared->initial_peak_timer = 0;
   shared->initial_peak_trigger = 0;
-  shared->initial_time = 0;
+  shared->initial_time = 1;
   shared->initial_tot_N = 0;
   shared->initial_tot_hosp_inc = 0;
   shared->initial_trigger = 0;

@@ -73,13 +73,18 @@ run_param_sets <- function(paramsets, L=100, N_particles=1, N_threads_internal=1
 
   
   results <- parallel::mclapply(
-                         paramsets,
-                         function (x) run_params(x, L,
-                                                 N_particles=N_particles,
-                                                 N_threads=N_threads_internal,
-                                                 run_params=x$run_params,
-                                                 run_name=x$name,
-                                                 silent=silent), mc.cores=N_threads_external)
+                         1:length(paramsets),
+                         function (i){
+                           x <- paramsets[[i]]
+                           if(! "name" %in% names(x)) { x$name <- i}
+                           run_params(x, L,
+                                      N_particles=N_particles,
+                                      N_threads=N_threads_internal,
+                                      run_params=x$run_params,
+                                      run_name=x$name,
+                                      silent=silent)
+                         }, mc.cores=N_threads_external)
+
   results <- tryCatch({
     rbindlist(results)
   },error=function(cont){
@@ -88,5 +93,7 @@ run_param_sets <- function(paramsets, L=100, N_particles=1, N_threads_internal=1
   }
   )
 
+  if(!"name" %in% paramsets[[1]]) results[, sim:=name]
+  
   return(results)                            
   }
