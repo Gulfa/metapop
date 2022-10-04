@@ -52,7 +52,7 @@ dim(change_factor) <- 4
 dim(rand_beta_factors) <- n
 rand_beta_factors[] <- user()
 rand_beta_sd <- user(0.1)
-update(log_beta) <- log_beta + rnorm(0, rand_beta_sd)
+update(log_beta) <- if(step %% (rand_beta_days*steps_per_day)==0) log_beta + rnorm(0, rand_beta_sd) else (log_beta)
 
 ## Spontaneous behaviour change
 ## Here beta_day is treated as the "government policy" and the total effect is a combination 
@@ -66,7 +66,10 @@ expected_health_loss[,] <- user(0)
 dim(contact_change) <- c(n, n_vac)
 initial(contact_change[,]) <- 0
 
-update(contact_change[,]) <- exp(spont_behav_change_params[4]*( (1-(1- sum(p_SE[i,j,]))^spont_behav_change_params[2]) * expected_health_loss[i,j] - spont_behav_change_params[2] *spont_behav_change_params[3]))/(1 + exp(spont_behav_change_params[4]*((1-(1- sum(p_SE[i,j,]))^spont_behav_change_params[2]) * expected_health_loss[i,j] - spont_behav_change_params[2]*spont_behav_change_params[3])))
+kernel[,] <- spont_behav_change_params[4]*( (1-(1- sum(p_SE[i,j,]))^spont_behav_change_params[2]) * expected_health_loss[i,j] - spont_behav_change_params[2] *spont_behav_change_params[3])
+dim(kernel) <- c(n, n_vac)
+
+update(contact_change[,]) <- if(kernel[i,j] > 15) 1 else (exp(kernel[i,j])/(1 + exp(kernel[i,j])))
 
 #update(contact_change[,]) <- logit(spont_behav_change_params[4]*( (1-(1- sum(p_SE[i,j,])^spont_behav_change_params[2])) * expected_health_loss[i,j] - spont_behav_change_params[2] *spont_behav_change_params[3]))
 dim(beta_reduction) <- c(n, n_vac)
@@ -75,6 +78,7 @@ beta_reduction[,] <- 1 - beta_day[step, i] /spont_behav_change_params[1]
 
 initial(beta_spont_behaviour[,]) <- beta_day[1, i]
 dim(beta_spont_behaviour) <- c(n,n_vac)
+
 update(beta_spont_behaviour[,]) <- spont_behav_change_params[1]*(1 - 0.6*(beta_reduction[i,j] + contact_change[i,j]) + 0.3*(beta_reduction[i,j]*contact_change[i,j]))
 
 
@@ -152,8 +156,8 @@ update(D[,,]) <- D[i,j,k] + n_B_D_D[i,j,k] + n_B_H_D[i,j,k] + n_B_ICU_D[i,j,k]
 
 update(tot_infected[,,]) <-  tot_infected[i,j,k] + n_SE[i,j,k]
   
-update(hosp_inc[]) <- if(step %% steps_per_day==0) sum(n_IH[i,,]) + sum(n_IICU[i,,]) else hosp_inc[i]+sum(n_IH[i,,]) + sum(n_IICU[i,,])
-update(tot_hosp_inc) <- sum(hosp_inc)
+update(hosp_inc[]) <- if(step %% (incidence_steps_measurement*steps_per_day==0)) sum(n_IH[i,,]) + sum(n_IICU[i,,]) else hosp_inc[i]+sum(n_IH[i,,]) + sum(n_IICU[i,,])
+update(tot_hosp_inc) <- sum(hosp_inc[])
 update(tot_hosp[,,]) <-  tot_hosp[i,j,k] + n_IH[i,j,k] + n_IICU[i,j,k]
 
 update(tot_resp[,,]) <- tot_resp[i,j,k] + n_ICU_HR[i,j,k]
@@ -549,7 +553,8 @@ asympt_infect <- user()
 
 #vac_time <- user()
 #vac_time_full_effect_1 <- user()
-
+rand_beta_days <- user(1)
+incidence_steps_measurement <- user(1)
 
 pre_sympt_period <- user()
 

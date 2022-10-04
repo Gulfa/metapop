@@ -91,8 +91,10 @@ __host__ __device__ T odin_max(T x, T y) {
 // [[dust::param(change_factor, has_default = TRUE, default_value = 1L, rank = 1, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(dt, has_default = TRUE, default_value = 1L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(expected_health_loss, has_default = TRUE, default_value = 0L, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(incidence_steps_measurement, has_default = TRUE, default_value = 1L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(include_waning, has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(n, has_default = TRUE, default_value = 198L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(rand_beta_days, has_default = TRUE, default_value = 1L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(rand_beta_sd, has_default = TRUE, default_value = 0.1, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(spont_behav_change_params, has_default = TRUE, default_value = 0L, rank = 1, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(threshold, has_default = TRUE, default_value = 100L, rank = 1, min = -Inf, max = Inf, integer = FALSE)]]
@@ -352,6 +354,9 @@ public:
     int dim_import_vec_2;
     int dim_import_vec_3;
     int dim_import_vec_4;
+    int dim_kernel;
+    int dim_kernel_1;
+    int dim_kernel_2;
     int dim_lambda_ij;
     int dim_lambda_ij_1;
     int dim_lambda_ij_12;
@@ -703,6 +708,7 @@ public:
     std::vector<real_type> hosp_prob;
     std::vector<real_type> icu_prob;
     std::vector<real_type> import_vec;
+    real_type incidence_steps_measurement;
     real_type include_waning;
     real_type infectious_period;
     std::vector<real_type> initial_A;
@@ -794,6 +800,7 @@ public:
     std::vector<real_type> prob_death_hosp;
     std::vector<real_type> prob_death_icu;
     std::vector<real_type> prob_death_non_hosp;
+    real_type rand_beta_days;
     std::vector<real_type> rand_beta_factors;
     real_type rand_beta_sd;
     std::vector<real_type> spont_behav_change_params;
@@ -826,6 +833,7 @@ public:
     std::vector<real_type> N_imp_non_zero;
     std::vector<real_type> beta;
     std::vector<real_type> beta_reduction;
+    std::vector<real_type> kernel;
     std::vector<real_type> lambda_ij;
     std::vector<real_type> n_AR;
     std::vector<real_type> n_B_D_D;
@@ -937,11 +945,11 @@ public:
     const real_type * tot_resp = state + shared->offset_variable_tot_resp;
     const real_type * tot_vac = state + shared->offset_variable_tot_vac;
     const real_type * N = state + shared->offset_variable_N;
-    state_next[7] = log_beta + dust::random::normal<real_type>(rng_state, 0, shared->rand_beta_sd);
     state_next[6] = (peak_trigger == 0 ? 0 : peak_timer + shared->dt);
     state_next[0] = (step + 1) * shared->dt;
-    state_next[10] = odin_sum1<real_type>(hosp_inc, 0, shared->dim_hosp_inc);
     state_next[1] = (peak_trigger == 1 && peak_timer < shared->beta_cut_peak_param[3] ? shared->beta_cut_peak_param[1] : shared->beta_cut_peak_param[0]);
+    state_next[7] = (fmodr<real_type>(step, (shared->rand_beta_days * shared->steps_per_day)) == 0 ? log_beta + dust::random::normal<real_type>(rng_state, 0, shared->rand_beta_sd) : (log_beta));
+    state_next[10] = odin_sum1<real_type>(hosp_inc, 0, shared->dim_hosp_inc);
     real_type current_tot_in_hosp = odin_sum3<real_type>(H, 0, shared->dim_H_1, 0, shared->dim_H_2, 0, shared->dim_H_3, shared->dim_H_1, shared->dim_H_12) + odin_sum3<real_type>(ICU_H, 0, shared->dim_ICU_H_1, 0, shared->dim_ICU_H_2, 0, shared->dim_ICU_H_3, shared->dim_ICU_H_1, shared->dim_ICU_H_12) + odin_sum3<real_type>(ICU_R, 0, shared->dim_ICU_R_1, 0, shared->dim_ICU_R_2, 0, shared->dim_ICU_R_3, shared->dim_ICU_R_1, shared->dim_ICU_R_12) + odin_sum3<real_type>(ICU_P, 0, shared->dim_ICU_P_1, 0, shared->dim_ICU_P_2, 0, shared->dim_ICU_P_3, shared->dim_ICU_P_1, shared->dim_ICU_P_12);
     for (int i = 1; i <= shared->dim_N_1; ++i) {
       for (int j = 1; j <= shared->dim_N_2; ++j) {
@@ -1178,6 +1186,11 @@ public:
         }
       }
     }
+    for (int i = 1; i <= shared->dim_kernel_1; ++i) {
+      for (int j = 1; j <= shared->dim_kernel_2; ++j) {
+        internal.kernel[i - 1 + shared->dim_kernel_1 * (j - 1)] = shared->spont_behav_change_params[3] * ((1 - std::pow((1 - odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12)), shared->spont_behav_change_params[1])) * shared->expected_health_loss[shared->dim_expected_health_loss_1 * (j - 1) + i - 1] - shared->spont_behav_change_params[1] * shared->spont_behav_change_params[2]);
+      }
+    }
     for (int i = 1; i <= shared->dim_n_HR_1; ++i) {
       for (int j = 1; j <= shared->dim_n_HR_2; ++j) {
         for (int k = 1; k <= shared->dim_n_HR_3; ++k) {
@@ -1239,11 +1252,6 @@ public:
         }
       }
     }
-    for (int i = 1; i <= shared->dim_contact_change_1; ++i) {
-      for (int j = 1; j <= shared->dim_contact_change_2; ++j) {
-        state_next[shared->offset_variable_contact_change + i - 1 + shared->dim_contact_change_1 * (j - 1)] = std::exp(shared->spont_behav_change_params[3] * ((1 - std::pow((1 - odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12)), shared->spont_behav_change_params[1])) * shared->expected_health_loss[shared->dim_expected_health_loss_1 * (j - 1) + i - 1] - shared->spont_behav_change_params[1] * shared->spont_behav_change_params[2])) / (real_type) (1 + std::exp(shared->spont_behav_change_params[3] * ((1 - std::pow((1 - odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12)), shared->spont_behav_change_params[1])) * shared->expected_health_loss[shared->dim_expected_health_loss_1 * (j - 1) + i - 1] - shared->spont_behav_change_params[1] * shared->spont_behav_change_params[2])));
-      }
-    }
     for (int i = 1; i <= shared->dim_n_ID_1; ++i) {
       for (int j = 1; j <= shared->dim_n_ID_2; ++j) {
         for (int k = 1; k <= shared->dim_n_ID_3; ++k) {
@@ -1280,8 +1288,13 @@ public:
         }
       }
     }
+    for (int i = 1; i <= shared->dim_contact_change_1; ++i) {
+      for (int j = 1; j <= shared->dim_contact_change_2; ++j) {
+        state_next[shared->offset_variable_contact_change + i - 1 + shared->dim_contact_change_1 * (j - 1)] = (internal.kernel[shared->dim_kernel_1 * (j - 1) + i - 1] > 15 ? 1 : (std::exp(internal.kernel[shared->dim_kernel_1 * (j - 1) + i - 1]) / (real_type) (1 + std::exp(internal.kernel[shared->dim_kernel_1 * (j - 1) + i - 1]))));
+      }
+    }
     for (int i = 1; i <= shared->dim_hosp_inc; ++i) {
-      state_next[11 + i - 1] = (fmodr<real_type>(step, shared->steps_per_day) == 0 ? odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12) : hosp_inc[i - 1] + odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12));
+      state_next[11 + i - 1] = (fmodr<real_type>(step, (shared->incidence_steps_measurement * shared->steps_per_day == 0)) ? odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12) : hosp_inc[i - 1] + odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12));
     }
     for (int i = 1; i <= shared->dim_tot_hosp_1; ++i) {
       for (int j = 1; j <= shared->dim_tot_hosp_2; ++j) {
@@ -1686,8 +1699,10 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->time_before_death_icu = NA_REAL;
   shared->waning_inf = NA_REAL;
   shared->dt = 1;
+  shared->incidence_steps_measurement = 1;
   shared->include_waning = 0;
   shared->n = 198;
+  shared->rand_beta_days = 1;
   shared->rand_beta_sd = 0.10000000000000001;
   shared->threshold_ini = 0.10000000000000001;
   shared->threshold_max = 0.20000000000000001;
@@ -1697,6 +1712,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->asympt_infect = user_get_scalar<real_type>(user, "asympt_infect", shared->asympt_infect, NA_REAL, NA_REAL);
   shared->beta_mode = user_get_scalar<real_type>(user, "beta_mode", shared->beta_mode, NA_REAL, NA_REAL);
   shared->dt = user_get_scalar<real_type>(user, "dt", shared->dt, NA_REAL, NA_REAL);
+  shared->incidence_steps_measurement = user_get_scalar<real_type>(user, "incidence_steps_measurement", shared->incidence_steps_measurement, NA_REAL, NA_REAL);
   shared->include_waning = user_get_scalar<real_type>(user, "include_waning", shared->include_waning, NA_REAL, NA_REAL);
   shared->infectious_period = user_get_scalar<real_type>(user, "infectious_period", shared->infectious_period, NA_REAL, NA_REAL);
   shared->latent_period = user_get_scalar<real_type>(user, "latent_period", shared->latent_period, NA_REAL, NA_REAL);
@@ -1706,6 +1722,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->n_vac = user_get_scalar<int>(user, "n_vac", shared->n_vac, NA_REAL, NA_REAL);
   shared->pre_sympt_infect = user_get_scalar<real_type>(user, "pre_sympt_infect", shared->pre_sympt_infect, NA_REAL, NA_REAL);
   shared->pre_sympt_period = user_get_scalar<real_type>(user, "pre_sympt_period", shared->pre_sympt_period, NA_REAL, NA_REAL);
+  shared->rand_beta_days = user_get_scalar<real_type>(user, "rand_beta_days", shared->rand_beta_days, NA_REAL, NA_REAL);
   shared->rand_beta_sd = user_get_scalar<real_type>(user, "rand_beta_sd", shared->rand_beta_sd, NA_REAL, NA_REAL);
   shared->threshold_ini = user_get_scalar<real_type>(user, "threshold_ini", shared->threshold_ini, NA_REAL, NA_REAL);
   shared->threshold_max = user_get_scalar<real_type>(user, "threshold_max", shared->threshold_max, NA_REAL, NA_REAL);
@@ -1848,6 +1865,8 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_import_vec_2 = shared->n;
   shared->dim_import_vec_3 = shared->n_vac;
   shared->dim_import_vec_4 = shared->n_strain;
+  shared->dim_kernel_1 = shared->n;
+  shared->dim_kernel_2 = shared->n_vac;
   shared->dim_lambda_ij_1 = shared->n;
   shared->dim_lambda_ij_2 = shared->n_vac;
   shared->dim_lambda_ij_3 = shared->n;
@@ -2153,6 +2172,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_import_vec = shared->dim_import_vec_1 * shared->dim_import_vec_2 * shared->dim_import_vec_3 * shared->dim_import_vec_4;
   shared->dim_import_vec_12 = shared->dim_import_vec_1 * shared->dim_import_vec_2;
   shared->dim_import_vec_123 = shared->dim_import_vec_1 * shared->dim_import_vec_2 * shared->dim_import_vec_3;
+  shared->dim_kernel = shared->dim_kernel_1 * shared->dim_kernel_2;
   shared->dim_lambda_ij = shared->dim_lambda_ij_1 * shared->dim_lambda_ij_2 * shared->dim_lambda_ij_3 * shared->dim_lambda_ij_4 * shared->dim_lambda_ij_5;
   shared->dim_lambda_ij_12 = shared->dim_lambda_ij_1 * shared->dim_lambda_ij_2;
   shared->dim_lambda_ij_123 = shared->dim_lambda_ij_1 * shared->dim_lambda_ij_2 * shared->dim_lambda_ij_3;
@@ -2338,6 +2358,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->initial_tot_infected = std::vector<real_type>(shared->dim_tot_infected);
   shared->initial_tot_resp = std::vector<real_type>(shared->dim_tot_resp);
   shared->initial_tot_vac = std::vector<real_type>(shared->dim_tot_vac);
+  internal.kernel = std::vector<real_type>(shared->dim_kernel);
   internal.lambda_ij = std::vector<real_type>(shared->dim_lambda_ij);
   internal.n_AR = std::vector<real_type>(shared->dim_n_AR);
   internal.n_B_D_D = std::vector<real_type>(shared->dim_n_B_D_D);

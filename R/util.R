@@ -27,8 +27,8 @@ fix_beta_mode_params <- function(params){
   if(!"beta_cut_peak_param" %in% params_keys) params$beta_cut_peak_param <- rep(0, 4)
   if(!"change_factor" %in% params_keys) params$change_factor <- rep(0, 4)
   if(!"threshold" %in% params_keys) params$threshold <- c(100,0)
-  if(!"spont_behav_change_params" %in% params_keys) params$spont_behav_change_params <- rep(0,4)
-  if(!"expected_health_loss" %in% params_keys) params$expected_health_loss <- array(1, dim=c(params$n,params$n_vac))
+  if(!"spont_behav_change_params" %in% params_keys) params$spont_behav_change_params <- c(1,100000, 1, 1)
+  if(!"expected_health_loss" %in% params_keys) params$expected_health_loss <- array(0, dim=c(params$n,params$n_vac))
   return(params)
 }
   
