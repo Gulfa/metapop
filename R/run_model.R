@@ -93,7 +93,7 @@ run_param_sets <- function(paramsets, L=100, N_particles=1, N_threads_internal=1
   }
   )
 
-  if(!"name" %in% paramsets[[1]]) results[, sim:=name]
+  if(!"name" %in% paramsets[[1]]) results[, sim:=paste(name,sim)]
   
   return(results)                            
   }
