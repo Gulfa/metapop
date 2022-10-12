@@ -79,7 +79,7 @@ beta_reduction[,] <- 1 - beta_day[step, i] /spont_behav_change_params[1]
 initial(beta_spont_behaviour[,]) <- beta_day[1, i]
 dim(beta_spont_behaviour) <- c(n,n_vac)
 
-update(beta_spont_behaviour[,]) <- spont_behav_change_params[1]*(1 - 0.6*(beta_reduction[i,j] + contact_change[i,j]) + 0.3*(beta_reduction[i,j]*contact_change[i,j]))
+update(beta_spont_behaviour[,]) <- spont_behav_change_params[1]*(1 - 0.8*(beta_reduction[i,j] + contact_change[i,j]) + 0.7*(beta_reduction[i,j]*contact_change[i,j]))
 
 
 

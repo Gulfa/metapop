@@ -1190,7 +1190,7 @@ public:
     }
     for (int i = 1; i <= shared->dim_beta_spont_behaviour_1; ++i) {
       for (int j = 1; j <= shared->dim_beta_spont_behaviour_2; ++j) {
-        state_next[shared->offset_variable_beta_spont_behaviour + i - 1 + shared->dim_beta_spont_behaviour_1 * (j - 1)] = shared->spont_behav_change_params[0] * (1 - 0.59999999999999998 * (internal.beta_reduction[shared->dim_beta_reduction_1 * (j - 1) + i - 1] + contact_change[shared->dim_contact_change_1 * (j - 1) + i - 1]) + 0.29999999999999999 * (internal.beta_reduction[shared->dim_beta_reduction_1 * (j - 1) + i - 1] * contact_change[shared->dim_contact_change_1 * (j - 1) + i - 1]));
+        state_next[shared->offset_variable_beta_spont_behaviour + i - 1 + shared->dim_beta_spont_behaviour_1 * (j - 1)] = shared->spont_behav_change_params[0] * (1 - 0.80000000000000004 * (internal.beta_reduction[shared->dim_beta_reduction_1 * (j - 1) + i - 1] + contact_change[shared->dim_contact_change_1 * (j - 1) + i - 1]) + 0.69999999999999996 * (internal.beta_reduction[shared->dim_beta_reduction_1 * (j - 1) + i - 1] * contact_change[shared->dim_contact_change_1 * (j - 1) + i - 1]));
       }
     }
     state_next[5] = e_int + r * shared->dt;
