@@ -128,6 +128,7 @@ refine_results_odin <- function(res, params){
   res <- add_per_age(res, "tot_resp", params)
   res <- add_per_age(res, "tot_hosp", params)
   res <- add_per_age(res, "D", params)
+  res <- add_per_age(res, "tot_vac", params)
 
   if(params$n_vac >= 2){
     res <- add_per_vac(res, "tot_vac", params)
