@@ -5,13 +5,13 @@ N_steps <- user()
 steps_per_day <- 1/dt
 
 # Vaccination
-vax_time_step[,] <- vaccinations[step, i,j] #interpolate(interpolation_time, vaccinated_cont)
+vax_time_step[,] <- vaccinations[step, i,j] 
 dim(vax_time_step) <- c(n, n_vac)
 dim(vaccinations) <- c(N_steps, n, n_vac)
 vaccinations[,,] <- user()
 
 
-N_imp[,,] <- import_vec[step,i,j,k] #interpolate(interpolation_time, N_imp_input)
+N_imp[,,] <- import_vec[step,i,j,k] 
 dim(import_vec) <- c(N_steps, n, n_vac, n_strain)
 dim(N_imp) <- c( n, n_vac, n_strain)
 import_vec[,,,] <- user()
@@ -207,7 +207,7 @@ dim(p_waning) <- c(n, n_vac)
 #dim(p_MISCR) <- (n,n_vac,n_strain)
 
 ## HARD CODED 2 strains
-n_SE_tot[,] <- rbinom(S[i,j], sum(p_SE[i,j,]))
+n_SE_tot[,] <- rbinom(S[i,j] - n_waning[i,j], sum(p_SE[i,j,]))
 rel_strain[,,] <- p_SE[i,j,k]/sum(p_SE[i,j,])
 n_SE[,,] <- if(k==1 || n_strain==1) rbinom(n_SE_tot[i,j],rel_strain[i,j,k]) else
               (if (k==2) n_SE_tot[i,j] - n_SE[i,j,1] else 0)
@@ -232,7 +232,10 @@ n_SEa[,,] <- rbinom(n_SE[i,j,k], pa[i,j,k])
 
 dim(n_SE_tot) <- c(n,n_vac)
 dim(rel_strain) <- c(n,n_vac,n_strain)
-n_waning[,] <- if(include_waning==1) if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) else(-sum(n_waning[i, 1:(j-1)])) else 0
+n_waning[,] <- if(include_waning==1) if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) else(-sum(n_waning[i, 1:(j-1)])) else ( if(include_waning==2) if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) - rbinom(S[i,j +1], p_waning[i, j+1]) else rbinom(S[i,j], p_waning[i,j]) else 0)
+                                                                                                                    
+                                                                                                                     
+                                                                                                                   
 
 
 dim(n_waning) <- c(n,n_vac)

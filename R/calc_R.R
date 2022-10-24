@@ -18,6 +18,18 @@ fix_beta_large <- function(params, S0, I, R0, use_eig=FALSE, beta=NULL, symp_tra
   }
 }
 
+#' Fixes beta value to get correct R0
+#'
+#' @export
+get_initial_dist <- function(params, S0, I, R0, use_eig=FALSE, beta=NULL, symp_trans=NULL){
+  S0 <- as.numeric(S0)/params$beta_norm
+  params$large_mixing_matrix <- get_lmm(params)
+  ng <- get_next_gen_large(params, S0, beta, symp_trans=symp_trans)
+  max_eigen <- eigen(ng, only.values=F)
+  max_eigen
+}
+
+
 
 
 

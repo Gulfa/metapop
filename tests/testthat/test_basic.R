@@ -1,4 +1,5 @@
 library(data.table)
+library(dplyr)
 basic_params <- function(N=9, n_vac=2, L=100, n_strain=1){
   list(
     N_steps=L,
@@ -109,9 +110,9 @@ test_that("Random beta", {
 }
 )
 test_that("Test vaccinaion implemenation", {
-  results_no_vax <- run_params(basic_params(), L=100, 3, 3)
-  params <- basic_params()
-  vax <- array(0,dim=c(100, 9, 2))
+  results_no_vax <- run_params(basic_params(N=2), L=100, 3, 3)
+  params <- basic_params(N=2)
+  vax <- array(0,dim=c(100, 2, 2))
   vax[5,,1] <- rep(-50000, params$n)
   vax[5,,2] <- rep(50000,  params$n)
 
@@ -138,6 +139,21 @@ test_that("Test Waning vaccine", {
   N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
   expect_true(N_t)
   expect_gte(mean(results[t==100,get("S[3]")]), 180000)
+  
+})
+
+
+test_that("Test Waning vaccine type 2", {
+  params <- basic_params(N=1, n_vac=3)
+  params$T_waning[,] <- c(1e10,10,3)
+  params$beta_day[,] <- 0
+  params$include_waning <- 2
+
+  results <- run_params(params, L=100, 3, 3)
+  N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
+  expect_true(N_t)
+  expect_gte(mean(results[t==100,get("S[1]")]), 280000)
+  expect_gte(mean(results[t==25,get("S[2]")]),mean(results[t==25,get("S[2]")]))
   
 })
 

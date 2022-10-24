@@ -1100,7 +1100,7 @@ public:
     }
     for (int i = 1; i <= shared->dim_n_waning_1; ++i) {
       for (int j = 1; j <= shared->dim_n_waning_2; ++j) {
-        internal.n_waning[i - 1 + shared->dim_n_waning_1 * (j - 1)] = (shared->include_waning == 1 ? (j != shared->n_vac ? dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1], shared->p_waning[shared->dim_p_waning_1 * (j - 1) + i - 1]) : (- odin_sum2<real_type>(internal.n_waning.data(), i - 1, i, 0, j - 1, shared->dim_n_waning_1))) : 0);
+        internal.n_waning[i - 1 + shared->dim_n_waning_1 * (j - 1)] = (shared->include_waning == 1 ? (j != shared->n_vac ? dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1], shared->p_waning[shared->dim_p_waning_1 * (j - 1) + i - 1]) : (- odin_sum2<real_type>(internal.n_waning.data(), i - 1, i, 0, j - 1, shared->dim_n_waning_1))) : ((shared->include_waning == 2 ? (j != shared->n_vac ? dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1], shared->p_waning[shared->dim_p_waning_1 * (j - 1) + i - 1]) - dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j + 1 - 1) + i - 1], shared->p_waning[shared->dim_p_waning_1 * (j + 1 - 1) + i - 1]) : dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1], shared->p_waning[shared->dim_p_waning_1 * (j - 1) + i - 1])) : 0)));
       }
     }
     for (int i = 1; i <= shared->dim_A_1; ++i) {
@@ -1221,7 +1221,7 @@ public:
     }
     for (int i = 1; i <= shared->dim_n_SE_tot_1; ++i) {
       for (int j = 1; j <= shared->dim_n_SE_tot_2; ++j) {
-        internal.n_SE_tot[i - 1 + shared->dim_n_SE_tot_1 * (j - 1)] = dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1], odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12));
+        internal.n_SE_tot[i - 1 + shared->dim_n_SE_tot_1 * (j - 1)] = dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1] - internal.n_waning[shared->dim_n_waning_1 * (j - 1) + i - 1], odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12));
       }
     }
     for (int i = 1; i <= shared->dim_rel_strain_1; ++i) {
