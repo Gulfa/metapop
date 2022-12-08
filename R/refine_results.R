@@ -272,7 +272,6 @@ refine_one_sim <- function(res, params,n){
   res <- t(res[1:dim(res)[1],])
   colnames(res) <- fix_index(params$dust_index)
   dt <- refine_results_odin(res,params)
-  print(colnames(dt)[duplicated(colnames(dt))])
   return(dt%>% dplyr::mutate(sim=n,t=1:dim(res)[1])
   )
 }
