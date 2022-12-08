@@ -157,6 +157,8 @@ update(D[,,]) <- D[i,j,k] + n_B_D_D[i,j,k] + n_B_H_D[i,j,k] + n_B_ICU_D[i,j,k]
 update(tot_infected[,,]) <-  tot_infected[i,j,k] + n_SE[i,j,k]
   
 update(hosp_inc[]) <- if(step %% (incidence_steps_measurement*steps_per_day)==0) sum(n_IH[i,,]) + sum(n_IICU[i,,]) else hosp_inc[i]+sum(n_IH[i,,]) + sum(n_IICU[i,,])
+
+update(incidence[]) <-  if(step %% (incidence_steps_measurement*steps_per_day)==0) sum(n_SE[,,i]) else incidence[i]+sum(n_SE[,,i])
 update(tot_hosp_inc) <- sum(hosp_inc[])
 update(tot_hosp[,,]) <-  tot_hosp[i,j,k] + n_IH[i,j,k] + n_IICU[i,j,k]
 
@@ -203,6 +205,7 @@ dim(n_RIS) <- c(n,n_vac,n_strain)
 dim(n_RI) <- c(n,n_vac,n_strain)
 dim(n_RI_op) <- c(n,n_vac,n_strain)
 dim(p_waning) <- c(n, n_vac)
+dim(incidence) <- n_strain
 #dim(p_full_effect) <- c(n,n_vac,n_strain)
 #dim(p_MISCR) <- (n,n_vac,n_strain)
 
@@ -210,7 +213,10 @@ dim(p_waning) <- c(n, n_vac)
 n_SE_tot[,] <- rbinom(S[i,j] - n_waning[i,j], sum(p_SE[i,j,]))
 rel_strain[,,] <- p_SE[i,j,k]/sum(p_SE[i,j,])
 n_SE[,,] <- if(k==1 || n_strain==1) rbinom(n_SE_tot[i,j],rel_strain[i,j,k]) else
-              (if (k==2) n_SE_tot[i,j] - n_SE[i,j,1] else 0)
+           (if (n_strain==2) n_SE_tot[i,j] - n_SE[i,j,1] else (
+                if(k==2) rbinom(n_SE_tot[i,j] - n_SE[i,j,1], rel_strain[i,j,2]/(rel_strain[i,j,2] + rel_strain[i,j,3])) else(
+                                                                                if (k==3) n_SE_tot[i,j] - n_SE[i,j,2] - n_SE[i,j,1]
+                                                                                                                    else 0)))
 
 n_RI[,,] <- if( n_strain==1) 0 else
              (if (k==1) rbinom(R[i,j,1], 1 - exp(-sum(lambda_ij[i,j,,,1])*cross_protection[1,2]*symp_asymp_effect[i,j,k]* dt)) else (if (k==2)  rbinom(R[i,j,2], 1 - exp(-sum(lambda_ij[i,j,,,1])*cross_protection[2,1]*symp_asymp_effect[i,j,k] * dt)) else 0))
@@ -398,6 +404,7 @@ initial(D[,,]) <-  D_ini[i,j,k]
 #initial(Ni[,,]) <-N[i,j,k] 
 initial(tot_N) <- 0
 initial(hosp_inc[]) <- 0
+initial(incidence[]) <- 0
 initial(tot_hosp_inc) <- 0
 initial(tot_infected[,,]) <- tot_infected_ini[i,j,k]
 initial(tot_hosp[,,]) <- tot_hosp_ini[i,j,k]

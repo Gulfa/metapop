@@ -29,17 +29,24 @@ add_per_strain <- function(res, key, params){
 }
 
 
-add_per_age <- function(res, key, params, use_strain=TRUE){
+add_per_age <- function(res, key, params, use_strain=TRUE, vac_index=NULL){
 
   fact <- 1
   if(!is.null(params$merge_half_age)){
     fact <- 2
   }
   if(use_strain){
-    n_list <- seq(1, params$n*params$n_vac*params$n_strain,by=params$age_groups/fact)
+      n_list <- seq(1, params$n*params$n_vac*params$n_strain,by=params$age_groups/fact)
+      
   }else{
-    n_list <- seq(1, params$n*params$n_vac,by=params$age_groups/fact)
+    if(is.null(vac_index)){
+      n_list <- seq(1, params$n*params$n_vac,by=params$age_groups/fact)
+    }else{
+      n_list <- seq(1, params$n,by=params$age_groups/fact) + (vac_index-1)*params$n
+    }
   }
+  
+  
   for(i in 0:(params$age_groups/fact-1)){
     vals <- res[, paste0(key, "[",n_list+i,"]")]
     if(!is.null(dim(vals))){
@@ -151,7 +158,7 @@ refine_results_odin <- function(res, params){
   res <- add_per_age(res, "tot_resp", params)
   res <- add_per_age(res, "tot_hosp", params)
   res <- add_per_age(res, "D", params)
-  res <- add_per_age(res, "tot_vac", params, use_strain=FALSE)
+  res <- add_per_age(res, "tot_vac", params, use_strain=FALSE, vac_index=1)
   res <- add_per_age(res, "S", params, use_strain=FALSE)
 
 
@@ -204,8 +211,8 @@ refine_results_odin <- function(res, params){
   res <- cbind(res, ward=rowSums(res[, c(paste0("H[",1:n,"]"), paste0("ICU_P[",1:n,"]"), paste0("ICU_H[",1:n,"]"))]))
   res <- cbind(res, hosp=rowSums(res[, c("ward", paste0("ICU_R[",1:n,"]"))]))
   res <- cbind(res, resp=rowSums(res[, paste0("ICU_R[",1:n,"]")]))
-  incidence <- c(res[2:N, "tot_infected"] - res[1:(N-1), "tot_infected"],0)
-  res <- cbind(res, incidence=incidence)
+#  incidence <- c(res[2:N, "tot_infected"] - res[1:(N-1), "tot_infected"],0)
+#  res <- cbind(res, incidence=incidence)
   hosp_incidence <- c(res[2:N, "tot_hosp"] - res[1:(N-1), "tot_hosp"],0)
   res <- cbind(res, hosp_incidence=hosp_incidence)
   return(data.table::data.table(res))
@@ -264,9 +271,9 @@ to_results_dt <- function(res, model, filter_dt=FALSE){
 refine_one_sim <- function(res, params,n){
   res <- t(res[1:dim(res)[1],])
   colnames(res) <- fix_index(params$dust_index)
-  dt <- refine_results_odin(res,params) %>% dplyr::mutate(sim=n,
-                                                           t=1:dim(res)[1])
-  
-  return(dt)
+  dt <- refine_results_odin(res,params)
+  print(colnames(dt)[duplicated(colnames(dt))])
+  return(dt%>% dplyr::mutate(sim=n,t=1:dim(res)[1])
+  )
 }
 
