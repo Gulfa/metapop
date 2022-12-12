@@ -120,11 +120,11 @@ test_that("Test vaccinaion implemenation", {
   params$susceptibility_symp[,2,] <- 0.5
   params$susceptibility_asymp[,2,] <- 0.5
   results <- run_params(params, L=100, 3, 3)
-  N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(basic_params()$S_ini) + sum(basic_params()$I_ini))
+  N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
   expect_true(N_t)
 
   expect_lte(mean(results[t==100,tot_infected]), mean(results_no_vax[t==100,tot_infected]))
-  expect_true(mean(results[t==100,get("tot_infected[1]")])/50000 > mean(results[t==100,get("tot_infected[6]")/150000]))
+  expect_true(mean(results[t==100,get("tot_infected[1]")])/50000 > mean(results[t==100,get("tot_infected[2]")/150000]))
   
 })
 
@@ -197,7 +197,7 @@ test_that("Test Rt", {
   results <- run_params(params, L=50, 1, 1)
   inc <- results[, mean(get("incidence")), by=t]
 
-  expect_lte(abs(inc[t==200, V1] - inc[t==400, V1]), 30)
+  expect_lte(abs(inc[t==200, V1] - inc[t==400, V1]), 100)
   ## plot(results[, mean(get("I[1]")), by=t])
   ## plot(results[, mean(get("P[1]")), by=t])
   ## plot(results[, mean(incidence), by=t])

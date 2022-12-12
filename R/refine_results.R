@@ -159,11 +159,13 @@ refine_results_odin <- function(res, params){
   res <- add_per_age(res, "tot_hosp", params)
   res <- add_per_age(res, "D", params)
   res <- add_per_age(res, "tot_vac", params, use_strain=FALSE, vac_index=1)
+  res <- add_per_age(res, "tot_vac_adm", params, use_strain=FALSE, vac_index=1)
   res <- add_per_age(res, "S", params, use_strain=FALSE)
 
 
   if(params$n_vac >= 2){
     res <- add_per_vac(res, "tot_vac", params, use_strain=FALSE)
+
   }
   if(!is.null(params$N_regions) & params$N_regions > 1){
     res <- add_per_region(res, "tot_infected", params)

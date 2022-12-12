@@ -164,6 +164,7 @@ update(tot_hosp[,,]) <-  tot_hosp[i,j,k] + n_IH[i,j,k] + n_IICU[i,j,k]
 
 update(tot_resp[,,]) <- tot_resp[i,j,k] + n_ICU_HR[i,j,k]
 update(tot_vac[,]) <- tot_vac[i,j] + n_vac_now[i,j]
+update(tot_vac_adm[,]) <- tot_vac_adm[i,j] + vax_time_step[i,j]
 #update(tot_misc[]) <- tot_misc[i] + n_PRE_MISC[i]
 #update(tot_imp[]) <- n_imp[i]
 
@@ -238,13 +239,19 @@ n_SEa[,,] <- rbinom(n_SE[i,j,k], pa[i,j,k])
 
 dim(n_SE_tot) <- c(n,n_vac)
 dim(rel_strain) <- c(n,n_vac,n_strain)
-n_waning[,] <- if(include_waning==1) if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) else(-sum(n_waning[i, 1:(j-1)])) else ( if(include_waning==2) if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) - rbinom(S[i,j +1], p_waning[i, j+1]) else rbinom(S[i,j], p_waning[i,j]) else 0)
+
+# For waning_type=2
+n_waning_tmp[,] <- rbinom(S[i,j], p_waning[i,j]) 
+dim(n_waning_tmp) <- c(n,n_vac)
+dim(n_waning) <- c(n,n_vac)
+
+n_waning[,] <- if(include_waning==1) if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) else(-sum(n_waning[i, 1:(j-1)])) else ( if(include_waning==2) if(j != n_vac) n_waning_tmp[i,j] - n_waning_tmp[i, j+1] else (n_waning_tmp[i,j]) else 0)
                                                                                                                     
                                                                                                                      
                                                                                                                    
 
 
-dim(n_waning) <- c(n,n_vac)
+
 
 
 pa[,,] <- asympt_frac[i,j,k]*susceptibility_asymp[i,j,k]/(asympt_frac[i,j,k]*susceptibility_asymp[i,j,k] + sympt_frac[i,j,k]*susceptibility_symp[i,j,k])
@@ -410,6 +417,7 @@ initial(tot_infected[,,]) <- tot_infected_ini[i,j,k]
 initial(tot_hosp[,,]) <- tot_hosp_ini[i,j,k]
 initial(tot_resp[,,]) <- tot_resp_ini[i,j,k]
 initial(tot_vac[,]) <- tot_vac_ini[i,j]
+initial(tot_vac_adm[,]) <- tot_vac_adm_ini[i,j]
 #initial(tot_misc[,,]) <- tot_misc_ini[i,j,k]
 #initial(tot_imp[,,]) <- 0
 #initial(log_beta) <- 0
@@ -444,6 +452,7 @@ dim(tot_infected)<- c(n, n_vac, n_strain)
 dim(tot_hosp)<- c(n, n_vac, n_strain)
 dim(tot_resp)<- c(n, n_vac, n_strain)
 dim(tot_vac)<- c(n, n_vac)
+dim(tot_vac_adm)<- c(n, n_vac)
 #dim(tot_misc)<- c(n, n_vac, n_strain)
 #dim(tot_imp)<- c(n, n_vac, n_strain)
 #dim(fraction_of_vaccines_given_to_S)<- c(n, n_vac, n_strain)
@@ -486,6 +495,7 @@ dim(tot_infected_ini)<- c(n, n_vac, n_strain)
 dim(tot_hosp_ini)<- c(n, n_vac, n_strain)
 dim(tot_resp_ini)<- c(n, n_vac, n_strain)
 dim(tot_vac_ini)<- c(n, n_vac)
+dim(tot_vac_adm_ini)<- c(n, n_vac)
 #dim(tot_misc_ini)<- c(n, n_vac, n_strain)
 
 #dim(reg_pop_long)<- c(n, n_vac, n_strain)
@@ -593,6 +603,7 @@ tot_infected_ini[,,] <- user(0)
 tot_hosp_ini[,,] <- user(0)
 tot_resp_ini[,,] <- user(0)
 tot_vac_ini[,] <- user(0)
+tot_vac_adm_ini[,] <- user(0)
 #reg_pop_long[,,] <- user()
 beta_norm[] <- user(0)
 log_beta_ini <- user()

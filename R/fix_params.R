@@ -49,4 +49,48 @@ change_dt <- function(params, dt){
   params$vaccinations <- N_vac[rows,,]
   return(params)
 }
-                     
+
+#'
+#' @export
+fix_init_params <- function(params){
+
+  
+  init_params_full <- c("I_imp_ini", "Ea_ini","Es_ini", "A_ini", "P_ini",
+                   "H_ini", "ICU_H_ini", "ICU_R_ini", "ICU_P_ini","B_D_ini", "B_D_H_ini",
+                   "B_D_ICU_ini", "R_ini", "D_ini", "tot_infected_ini",  "I_ini",
+                   "tot_hosp_ini", "tot_resp_ini")
+  init_params_min <- c("S_ini","tot_vac_ini", "tot_vac_adm_ini")
+
+  for(p in c(init_params_full, init_params_min)){
+    if(! p %in% names(params)){
+
+      if(p %in% init_params_min){
+        dims <-c(params$n, params$n_vac)
+      }else{
+        dims <- c(params$n, params$n_vac, params$n_strain)
+      }
+      params[[p]] <- array(0, dim=dims)
+    }
+
+  }
+  return(params)
+}
+
+
+
+#'
+#' @export
+fix_beta_mode_params <- function(params){
+
+  params_keys <- names(params)
+  if(!"rand_beta_sd" %in% params_keys) params$rand_beta_sd <- 0.1
+  if(!"rand_beta_factors" %in% params_keys) params$rand_beta_factors <-rep(1, params$n)
+  if(!"log_beta_ini" %in% params_keys) params$log_beta_ini <-0
+  if(!"beta_cut_peak_param" %in% params_keys) params$beta_cut_peak_param <- rep(0, 4)
+  if(!"change_factor" %in% params_keys) params$change_factor <- rep(0, 4)
+  if(!"threshold" %in% params_keys) params$threshold <- c(100,0)
+  if(!"spont_behav_change_params" %in% params_keys) params$spont_behav_change_params <- c(1,100000, 1, 1)
+  if(!"expected_health_loss" %in% params_keys) params$expected_health_loss <- array(0, dim=c(params$n,params$n_vac))
+  return(params)
+}
+  
