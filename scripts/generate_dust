@@ -5,3 +5,4 @@ withr::with_options(
   withr::with_collate(
     "C",
     odin.dust::odin_dust_package(here::here())))
+traceback()

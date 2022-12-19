@@ -118,7 +118,17 @@ N_imp_non_zero[,,] <- if(S[i,j] - sum(n_SE[i,j,]) +  n_vac_now[i,j] - n_waning[i
 
 dim(n_vac_now) <- c(n, n_vac)
 dim(N_imp_non_zero) <- c(n, n_vac, n_strain)
-update(S[,]) <-  S[i,j] - sum(n_SE[i,j,]) +  n_vac_now[i,j] - n_waning[i,j] + sum(n_RS[i,j,]) -sum(N_imp_non_zero[i,j,])  #+ (sum(mig_S[i,])- S[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))*dt + dt*S_waning[i]/waning_immunity_vax[i]*0   - n_imp[i] 
+
+vac_struct_length <- user(0)
+
+
+index[] <- as.integer((i - 1)/vac_struct_length) + 1
+dim(index) <- n_vac
+waning_tmp[,] <- if(vac_struct_length == 0) sum(n_RS[i,j,]) else (
+                     if(j %% vac_struct_length == 0) sum(n_RS[i,,index[j]]) else 0)
+
+dim(waning_tmp) <- c(n, n_vac)
+update(S[,]) <-  S[i,j] - sum(n_SE[i,j,]) +  n_vac_now[i,j] - n_waning[i,j] + waning_tmp[i,j] -sum(N_imp_non_zero[i,j,])  #+ (sum(mig_S[i,])- S[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))*dt + dt*S_waning[i]/waning_immunity_vax[i]*0   - n_imp[i] 
 #S[] <- if(S[i] <0 ) 0 S[i]
 
 update(Ea[,,]) <- Ea[i,j,k] + n_SEa[i,j,k] - n_EaA[i,j,k] + n_RIA[i,j,k]# +  dt*(sum(mig_Ea[i,])- Ea[i]/reg_pop_long[i] * sum(migration_matrix[1:n,i]))
@@ -245,7 +255,10 @@ n_waning_tmp[,] <- rbinom(S[i,j], p_waning[i,j])
 dim(n_waning_tmp) <- c(n,n_vac)
 dim(n_waning) <- c(n,n_vac)
 
-n_waning[,] <- if(include_waning==1) if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) else(-sum(n_waning[i, 1:(j-1)])) else ( if(include_waning==2) if(j != n_vac) n_waning_tmp[i,j] - n_waning_tmp[i, j+1] else (n_waning_tmp[i,j]) else 0)
+n_waning[,] <- if(include_waning==1) if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) else(-sum(n_waning[i, 1:(j-1)])) else ( 
+   if(include_waning==2) if(vac_struct_length==0) if(j != n_vac) n_waning_tmp[i,j] - n_waning_tmp[i, j+1] else (n_waning_tmp[i,j]) else(
+    if(j %% vac_struct_length != 0) n_waning_tmp[i,j] - n_waning_tmp[i, j+1] else (n_waning_tmp[i,j])
+    )else 0)
                                                                                                                     
                                                                                                                      
                                                                                                                    

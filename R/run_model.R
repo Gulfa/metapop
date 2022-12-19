@@ -17,7 +17,7 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
 
   params <- fix_init_params(params)
   dust_model <- model$new(pars = params,
-                         step = 1,
+                         time=1,
                          n_particles = N_particles,
                          n_threads = N_threads,
                          )

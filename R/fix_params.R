@@ -11,7 +11,7 @@ fix_params <- function(params, N, n_vac, n_strain, vac_pars){
   params$icu_prob <- array(outer(params$icu_prob, vac_pars$rr_icu), dim=c(N, n_vac, n_strain))
   params$pre_icu <- array(params$pre_icu, dim=c(N, n_vac, n_strain))
   params$post_icu <- array(params$post_icu, dim=c(N, n_vac, n_strain))
-  params$susceptibility <- array(outer(params$susceptibility, vac_pars$rr_inf), dim=c(N, n_vac, n_strain))
+ # params$susceptibility <- array(outer(params$susceptibility, vac_pars$rr_inf), dim=c(N, n_vac, n_strain))
   params$susceptibility_symp <- array(outer(params$susceptibility, vac_pars$rr_inf),dim=c(N, n_vac, n_strain))
   params$susceptibility_asymp <- array(outer(params$susceptibility, vac_pars$rr_inf_asymp), dim=c(N, n_vac, n_strain))
   params$transmisibility <- array(outer(params$transmisibility, vac_pars$rr_trans), dim=c(N, n_vac, n_strain))

@@ -128,6 +128,53 @@ test_that("Test vaccinaion implemenation", {
   
 })
 
+test_that("Test simple waning from R", {
+  params <- basic_params(N=2, n_vac=1)
+  params$R_ini[1:2,1,1] <- 1e5
+  params$S_ini[1:2,1] <- 0
+  params$waning_inf <- 5
+  results <- run_params(params, L=100, 1, 1)
+  N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$R_ini) + sum(params$I_ini))
+  expect_true(N_t)
+  expect_gte(mean(results[t==100,get("S[1]")]), 90000)
+  expect_lte(mean(results[t==100,get("R[1]")]), 10000)
+})
+
+
+test_that("Test complicated waning from R with strains", {
+  params <- basic_params(N=1, n_vac=4, n_strain=2)
+  params$R_ini[1,1:4,1] <- 1e5
+  params$R_ini[1,1:4,2] <- 2e5
+  params$S_ini[1,1:4] <- 0
+  params$I_ini <- params$I_ini*1
+  params$waning_inf <- 5
+  params$beta_day <- params$beta_day*0
+  params$vac_struct_length <- 2
+  results <- run_params(params, L=100, 1, 1)
+  N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$R_ini) + sum(params$I_ini))
+  expect_true(N_t)
+
+  expect_equal(mean(results[t==100,get("S[1]")]), 0)
+  expect_gte(mean(results[t==100,get("S[2]")]), 4e5)
+  expect_equal(mean(results[t==100,get("S[3]")]), 0)
+  expect_gte(mean(results[t==100,get("S[4]")]), 8e5)
+
+  params$T_waning <- matrix(c(2e10, 5, 1e10, 5), nrow=1, ncol=4)
+  params$include_waning <- 2
+  results <- run_params(params, L=100, 1, 1)
+  N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$R_ini) + sum(params$I_ini))
+  expect_true(N_t)
+
+  expect_equal(mean(results[t==100,get("S[2]")]), 0)
+  expect_gte(mean(results[t==100,get("S[1]")]), 4e5)
+  expect_equal(mean(results[t==100,get("S[4]")]), 0)
+  expect_gte(mean(results[t==100,get("S[3]")]), 8e5)
+
+ 
+
+
+})
+
 
 test_that("Test Waning vaccine", {
   params <- basic_params(N=1, n_vac=3)
@@ -197,7 +244,7 @@ test_that("Test Rt", {
   results <- run_params(params, L=50, 1, 1)
   inc <- results[, mean(get("incidence")), by=t]
 
-  expect_lte(abs(inc[t==200, V1] - inc[t==400, V1]), 100)
+  expect_lte(abs(inc[t==200, V1] - inc[t==400, V1]), 200)
   ## plot(results[, mean(get("I[1]")), by=t])
   ## plot(results[, mean(get("P[1]")), by=t])
   ## plot(results[, mean(incidence), by=t])

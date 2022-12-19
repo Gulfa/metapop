@@ -8,32 +8,32 @@ dust_metapop_gpu_info <- function() {
   .Call(`_metapop_dust_metapop_gpu_info`)
 }
 
-dust_cpu_metapop_alloc <- function(r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config) {
-  .Call(`_metapop_dust_cpu_metapop_alloc`, r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config)
+dust_cpu_metapop_alloc <- function(r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
+  .Call(`_metapop_dust_cpu_metapop_alloc`, r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
 }
 
-dust_cpu_metapop_run <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_metapop_run`, ptr, step_end)
+dust_cpu_metapop_run <- function(ptr, time_end) {
+  .Call(`_metapop_dust_cpu_metapop_run`, ptr, time_end)
 }
 
-dust_cpu_metapop_simulate <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_metapop_simulate`, ptr, step_end)
+dust_cpu_metapop_simulate <- function(ptr, time_end) {
+  .Call(`_metapop_dust_cpu_metapop_simulate`, ptr, time_end)
 }
 
 dust_cpu_metapop_set_index <- function(ptr, r_index) {
   .Call(`_metapop_dust_cpu_metapop_set_index`, ptr, r_index)
 }
 
-dust_cpu_metapop_update_state <- function(ptr, r_pars, r_state, r_step, r_set_initial_state) {
-  .Call(`_metapop_dust_cpu_metapop_update_state`, ptr, r_pars, r_state, r_step, r_set_initial_state)
+dust_cpu_metapop_update_state <- function(ptr, r_pars, r_state, r_time, r_set_initial_state, index, reset_step_size) {
+  .Call(`_metapop_dust_cpu_metapop_update_state`, ptr, r_pars, r_state, r_time, r_set_initial_state, index, reset_step_size)
 }
 
 dust_cpu_metapop_state <- function(ptr, r_index) {
   .Call(`_metapop_dust_cpu_metapop_state`, ptr, r_index)
 }
 
-dust_cpu_metapop_step <- function(ptr) {
-  .Call(`_metapop_dust_cpu_metapop_step`, ptr)
+dust_cpu_metapop_time <- function(ptr) {
+  .Call(`_metapop_dust_cpu_metapop_time`, ptr)
 }
 
 dust_cpu_metapop_reorder <- function(ptr, r_index) {
@@ -60,8 +60,8 @@ dust_cpu_metapop_compare_data <- function(ptr) {
   .Call(`_metapop_dust_cpu_metapop_compare_data`, ptr)
 }
 
-dust_cpu_metapop_filter <- function(ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood) {
-  .Call(`_metapop_dust_cpu_metapop_filter`, ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood)
+dust_cpu_metapop_filter <- function(ptr, time_end, save_trajectories, time_snapshot, min_log_likelihood) {
+  .Call(`_metapop_dust_cpu_metapop_filter`, ptr, time_end, save_trajectories, time_snapshot, min_log_likelihood)
 }
 
 dust_cpu_metapop_set_n_threads <- function(ptr, n_threads) {
@@ -72,6 +72,14 @@ dust_cpu_metapop_n_state <- function(ptr) {
   .Call(`_metapop_dust_cpu_metapop_n_state`, ptr)
 }
 
+dust_cpu_metapop_set_stochastic_schedule <- function(ptr, time) {
+  invisible(.Call(`_metapop_dust_cpu_metapop_set_stochastic_schedule`, ptr, time))
+}
+
+dust_cpu_metapop_ode_statistics <- function(ptr) {
+  invisible(.Call(`_metapop_dust_cpu_metapop_ode_statistics`, ptr))
+}
+
 dust_metapopfull_capabilities <- function() {
   .Call(`_metapop_dust_metapopfull_capabilities`)
 }
@@ -80,32 +88,32 @@ dust_metapopfull_gpu_info <- function() {
   .Call(`_metapop_dust_metapopfull_gpu_info`)
 }
 
-dust_cpu_metapopfull_alloc <- function(r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config) {
-  .Call(`_metapop_dust_cpu_metapopfull_alloc`, r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config)
+dust_cpu_metapopfull_alloc <- function(r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
+  .Call(`_metapop_dust_cpu_metapopfull_alloc`, r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
 }
 
-dust_cpu_metapopfull_run <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_metapopfull_run`, ptr, step_end)
+dust_cpu_metapopfull_run <- function(ptr, time_end) {
+  .Call(`_metapop_dust_cpu_metapopfull_run`, ptr, time_end)
 }
 
-dust_cpu_metapopfull_simulate <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_metapopfull_simulate`, ptr, step_end)
+dust_cpu_metapopfull_simulate <- function(ptr, time_end) {
+  .Call(`_metapop_dust_cpu_metapopfull_simulate`, ptr, time_end)
 }
 
 dust_cpu_metapopfull_set_index <- function(ptr, r_index) {
   .Call(`_metapop_dust_cpu_metapopfull_set_index`, ptr, r_index)
 }
 
-dust_cpu_metapopfull_update_state <- function(ptr, r_pars, r_state, r_step, r_set_initial_state) {
-  .Call(`_metapop_dust_cpu_metapopfull_update_state`, ptr, r_pars, r_state, r_step, r_set_initial_state)
+dust_cpu_metapopfull_update_state <- function(ptr, r_pars, r_state, r_time, r_set_initial_state, index, reset_step_size) {
+  .Call(`_metapop_dust_cpu_metapopfull_update_state`, ptr, r_pars, r_state, r_time, r_set_initial_state, index, reset_step_size)
 }
 
 dust_cpu_metapopfull_state <- function(ptr, r_index) {
   .Call(`_metapop_dust_cpu_metapopfull_state`, ptr, r_index)
 }
 
-dust_cpu_metapopfull_step <- function(ptr) {
-  .Call(`_metapop_dust_cpu_metapopfull_step`, ptr)
+dust_cpu_metapopfull_time <- function(ptr) {
+  .Call(`_metapop_dust_cpu_metapopfull_time`, ptr)
 }
 
 dust_cpu_metapopfull_reorder <- function(ptr, r_index) {
@@ -132,8 +140,8 @@ dust_cpu_metapopfull_compare_data <- function(ptr) {
   .Call(`_metapop_dust_cpu_metapopfull_compare_data`, ptr)
 }
 
-dust_cpu_metapopfull_filter <- function(ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood) {
-  .Call(`_metapop_dust_cpu_metapopfull_filter`, ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood)
+dust_cpu_metapopfull_filter <- function(ptr, time_end, save_trajectories, time_snapshot, min_log_likelihood) {
+  .Call(`_metapop_dust_cpu_metapopfull_filter`, ptr, time_end, save_trajectories, time_snapshot, min_log_likelihood)
 }
 
 dust_cpu_metapopfull_set_n_threads <- function(ptr, n_threads) {
@@ -144,6 +152,14 @@ dust_cpu_metapopfull_n_state <- function(ptr) {
   .Call(`_metapop_dust_cpu_metapopfull_n_state`, ptr)
 }
 
+dust_cpu_metapopfull_set_stochastic_schedule <- function(ptr, time) {
+  invisible(.Call(`_metapop_dust_cpu_metapopfull_set_stochastic_schedule`, ptr, time))
+}
+
+dust_cpu_metapopfull_ode_statistics <- function(ptr) {
+  invisible(.Call(`_metapop_dust_cpu_metapopfull_ode_statistics`, ptr))
+}
+
 dust_mod_capabilities <- function() {
   .Call(`_metapop_dust_mod_capabilities`)
 }
@@ -152,32 +168,32 @@ dust_mod_gpu_info <- function() {
   .Call(`_metapop_dust_mod_gpu_info`)
 }
 
-dust_cpu_mod_alloc <- function(r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config) {
-  .Call(`_metapop_dust_cpu_mod_alloc`, r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config)
+dust_cpu_mod_alloc <- function(r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
+  .Call(`_metapop_dust_cpu_mod_alloc`, r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
 }
 
-dust_cpu_mod_run <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_mod_run`, ptr, step_end)
+dust_cpu_mod_run <- function(ptr, time_end) {
+  .Call(`_metapop_dust_cpu_mod_run`, ptr, time_end)
 }
 
-dust_cpu_mod_simulate <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_mod_simulate`, ptr, step_end)
+dust_cpu_mod_simulate <- function(ptr, time_end) {
+  .Call(`_metapop_dust_cpu_mod_simulate`, ptr, time_end)
 }
 
 dust_cpu_mod_set_index <- function(ptr, r_index) {
   .Call(`_metapop_dust_cpu_mod_set_index`, ptr, r_index)
 }
 
-dust_cpu_mod_update_state <- function(ptr, r_pars, r_state, r_step, r_set_initial_state) {
-  .Call(`_metapop_dust_cpu_mod_update_state`, ptr, r_pars, r_state, r_step, r_set_initial_state)
+dust_cpu_mod_update_state <- function(ptr, r_pars, r_state, r_time, r_set_initial_state, index, reset_step_size) {
+  .Call(`_metapop_dust_cpu_mod_update_state`, ptr, r_pars, r_state, r_time, r_set_initial_state, index, reset_step_size)
 }
 
 dust_cpu_mod_state <- function(ptr, r_index) {
   .Call(`_metapop_dust_cpu_mod_state`, ptr, r_index)
 }
 
-dust_cpu_mod_step <- function(ptr) {
-  .Call(`_metapop_dust_cpu_mod_step`, ptr)
+dust_cpu_mod_time <- function(ptr) {
+  .Call(`_metapop_dust_cpu_mod_time`, ptr)
 }
 
 dust_cpu_mod_reorder <- function(ptr, r_index) {
@@ -204,8 +220,8 @@ dust_cpu_mod_compare_data <- function(ptr) {
   .Call(`_metapop_dust_cpu_mod_compare_data`, ptr)
 }
 
-dust_cpu_mod_filter <- function(ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood) {
-  .Call(`_metapop_dust_cpu_mod_filter`, ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood)
+dust_cpu_mod_filter <- function(ptr, time_end, save_trajectories, time_snapshot, min_log_likelihood) {
+  .Call(`_metapop_dust_cpu_mod_filter`, ptr, time_end, save_trajectories, time_snapshot, min_log_likelihood)
 }
 
 dust_cpu_mod_set_n_threads <- function(ptr, n_threads) {
@@ -216,6 +232,14 @@ dust_cpu_mod_n_state <- function(ptr) {
   .Call(`_metapop_dust_cpu_mod_n_state`, ptr)
 }
 
+dust_cpu_mod_set_stochastic_schedule <- function(ptr, time) {
+  invisible(.Call(`_metapop_dust_cpu_mod_set_stochastic_schedule`, ptr, time))
+}
+
+dust_cpu_mod_ode_statistics <- function(ptr) {
+  invisible(.Call(`_metapop_dust_cpu_mod_ode_statistics`, ptr))
+}
+
 dust_model_capabilities <- function() {
   .Call(`_metapop_dust_model_capabilities`)
 }
@@ -224,32 +248,32 @@ dust_model_gpu_info <- function() {
   .Call(`_metapop_dust_model_gpu_info`)
 }
 
-dust_cpu_model_alloc <- function(r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config) {
-  .Call(`_metapop_dust_cpu_model_alloc`, r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config)
+dust_cpu_model_alloc <- function(r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
+  .Call(`_metapop_dust_cpu_model_alloc`, r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
 }
 
-dust_cpu_model_run <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_model_run`, ptr, step_end)
+dust_cpu_model_run <- function(ptr, time_end) {
+  .Call(`_metapop_dust_cpu_model_run`, ptr, time_end)
 }
 
-dust_cpu_model_simulate <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_model_simulate`, ptr, step_end)
+dust_cpu_model_simulate <- function(ptr, time_end) {
+  .Call(`_metapop_dust_cpu_model_simulate`, ptr, time_end)
 }
 
 dust_cpu_model_set_index <- function(ptr, r_index) {
   .Call(`_metapop_dust_cpu_model_set_index`, ptr, r_index)
 }
 
-dust_cpu_model_update_state <- function(ptr, r_pars, r_state, r_step, r_set_initial_state) {
-  .Call(`_metapop_dust_cpu_model_update_state`, ptr, r_pars, r_state, r_step, r_set_initial_state)
+dust_cpu_model_update_state <- function(ptr, r_pars, r_state, r_time, r_set_initial_state, index, reset_step_size) {
+  .Call(`_metapop_dust_cpu_model_update_state`, ptr, r_pars, r_state, r_time, r_set_initial_state, index, reset_step_size)
 }
 
 dust_cpu_model_state <- function(ptr, r_index) {
   .Call(`_metapop_dust_cpu_model_state`, ptr, r_index)
 }
 
-dust_cpu_model_step <- function(ptr) {
-  .Call(`_metapop_dust_cpu_model_step`, ptr)
+dust_cpu_model_time <- function(ptr) {
+  .Call(`_metapop_dust_cpu_model_time`, ptr)
 }
 
 dust_cpu_model_reorder <- function(ptr, r_index) {
@@ -276,8 +300,8 @@ dust_cpu_model_compare_data <- function(ptr) {
   .Call(`_metapop_dust_cpu_model_compare_data`, ptr)
 }
 
-dust_cpu_model_filter <- function(ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood) {
-  .Call(`_metapop_dust_cpu_model_filter`, ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood)
+dust_cpu_model_filter <- function(ptr, time_end, save_trajectories, time_snapshot, min_log_likelihood) {
+  .Call(`_metapop_dust_cpu_model_filter`, ptr, time_end, save_trajectories, time_snapshot, min_log_likelihood)
 }
 
 dust_cpu_model_set_n_threads <- function(ptr, n_threads) {
@@ -288,146 +312,10 @@ dust_cpu_model_n_state <- function(ptr) {
   .Call(`_metapop_dust_cpu_model_n_state`, ptr)
 }
 
-dust_std_model_capabilities <- function() {
-  .Call(`_metapop_dust_std_model_capabilities`)
+dust_cpu_model_set_stochastic_schedule <- function(ptr, time) {
+  invisible(.Call(`_metapop_dust_cpu_model_set_stochastic_schedule`, ptr, time))
 }
 
-dust_std_model_gpu_info <- function() {
-  .Call(`_metapop_dust_std_model_gpu_info`)
-}
-
-dust_cpu_std_model_alloc <- function(r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config) {
-  .Call(`_metapop_dust_cpu_std_model_alloc`, r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config)
-}
-
-dust_cpu_std_model_run <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_std_model_run`, ptr, step_end)
-}
-
-dust_cpu_std_model_simulate <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_std_model_simulate`, ptr, step_end)
-}
-
-dust_cpu_std_model_set_index <- function(ptr, r_index) {
-  .Call(`_metapop_dust_cpu_std_model_set_index`, ptr, r_index)
-}
-
-dust_cpu_std_model_update_state <- function(ptr, r_pars, r_state, r_step, r_set_initial_state) {
-  .Call(`_metapop_dust_cpu_std_model_update_state`, ptr, r_pars, r_state, r_step, r_set_initial_state)
-}
-
-dust_cpu_std_model_state <- function(ptr, r_index) {
-  .Call(`_metapop_dust_cpu_std_model_state`, ptr, r_index)
-}
-
-dust_cpu_std_model_step <- function(ptr) {
-  .Call(`_metapop_dust_cpu_std_model_step`, ptr)
-}
-
-dust_cpu_std_model_reorder <- function(ptr, r_index) {
-  invisible(.Call(`_metapop_dust_cpu_std_model_reorder`, ptr, r_index))
-}
-
-dust_cpu_std_model_resample <- function(ptr, r_weights) {
-  .Call(`_metapop_dust_cpu_std_model_resample`, ptr, r_weights)
-}
-
-dust_cpu_std_model_rng_state <- function(ptr, first_only, last_only) {
-  .Call(`_metapop_dust_cpu_std_model_rng_state`, ptr, first_only, last_only)
-}
-
-dust_cpu_std_model_set_rng_state <- function(ptr, rng_state) {
-  .Call(`_metapop_dust_cpu_std_model_set_rng_state`, ptr, rng_state)
-}
-
-dust_cpu_std_model_set_data <- function(ptr, data, shared) {
-  .Call(`_metapop_dust_cpu_std_model_set_data`, ptr, data, shared)
-}
-
-dust_cpu_std_model_compare_data <- function(ptr) {
-  .Call(`_metapop_dust_cpu_std_model_compare_data`, ptr)
-}
-
-dust_cpu_std_model_filter <- function(ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood) {
-  .Call(`_metapop_dust_cpu_std_model_filter`, ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood)
-}
-
-dust_cpu_std_model_set_n_threads <- function(ptr, n_threads) {
-  invisible(.Call(`_metapop_dust_cpu_std_model_set_n_threads`, ptr, n_threads))
-}
-
-dust_cpu_std_model_n_state <- function(ptr) {
-  .Call(`_metapop_dust_cpu_std_model_n_state`, ptr)
-}
-
-dust_stdmodel_capabilities <- function() {
-  .Call(`_metapop_dust_stdmodel_capabilities`)
-}
-
-dust_stdmodel_gpu_info <- function() {
-  .Call(`_metapop_dust_stdmodel_gpu_info`)
-}
-
-dust_cpu_stdmodel_alloc <- function(r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config) {
-  .Call(`_metapop_dust_cpu_stdmodel_alloc`, r_pars, pars_multi, step, r_n_particles, n_threads, r_seed, deterministic, gpu_config)
-}
-
-dust_cpu_stdmodel_run <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_stdmodel_run`, ptr, step_end)
-}
-
-dust_cpu_stdmodel_simulate <- function(ptr, step_end) {
-  .Call(`_metapop_dust_cpu_stdmodel_simulate`, ptr, step_end)
-}
-
-dust_cpu_stdmodel_set_index <- function(ptr, r_index) {
-  .Call(`_metapop_dust_cpu_stdmodel_set_index`, ptr, r_index)
-}
-
-dust_cpu_stdmodel_update_state <- function(ptr, r_pars, r_state, r_step, r_set_initial_state) {
-  .Call(`_metapop_dust_cpu_stdmodel_update_state`, ptr, r_pars, r_state, r_step, r_set_initial_state)
-}
-
-dust_cpu_stdmodel_state <- function(ptr, r_index) {
-  .Call(`_metapop_dust_cpu_stdmodel_state`, ptr, r_index)
-}
-
-dust_cpu_stdmodel_step <- function(ptr) {
-  .Call(`_metapop_dust_cpu_stdmodel_step`, ptr)
-}
-
-dust_cpu_stdmodel_reorder <- function(ptr, r_index) {
-  invisible(.Call(`_metapop_dust_cpu_stdmodel_reorder`, ptr, r_index))
-}
-
-dust_cpu_stdmodel_resample <- function(ptr, r_weights) {
-  .Call(`_metapop_dust_cpu_stdmodel_resample`, ptr, r_weights)
-}
-
-dust_cpu_stdmodel_rng_state <- function(ptr, first_only, last_only) {
-  .Call(`_metapop_dust_cpu_stdmodel_rng_state`, ptr, first_only, last_only)
-}
-
-dust_cpu_stdmodel_set_rng_state <- function(ptr, rng_state) {
-  .Call(`_metapop_dust_cpu_stdmodel_set_rng_state`, ptr, rng_state)
-}
-
-dust_cpu_stdmodel_set_data <- function(ptr, data, shared) {
-  .Call(`_metapop_dust_cpu_stdmodel_set_data`, ptr, data, shared)
-}
-
-dust_cpu_stdmodel_compare_data <- function(ptr) {
-  .Call(`_metapop_dust_cpu_stdmodel_compare_data`, ptr)
-}
-
-dust_cpu_stdmodel_filter <- function(ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood) {
-  .Call(`_metapop_dust_cpu_stdmodel_filter`, ptr, step_end, save_trajectories, step_snapshot, min_log_likelihood)
-}
-
-dust_cpu_stdmodel_set_n_threads <- function(ptr, n_threads) {
-  invisible(.Call(`_metapop_dust_cpu_stdmodel_set_n_threads`, ptr, n_threads))
-}
-
-dust_cpu_stdmodel_n_state <- function(ptr) {
-  .Call(`_metapop_dust_cpu_stdmodel_n_state`, ptr)
+dust_cpu_model_ode_statistics <- function(ptr) {
+  invisible(.Call(`_metapop_dust_cpu_model_ode_statistics`, ptr))
 }
