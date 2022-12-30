@@ -869,7 +869,6 @@ model <- R6::R6Class(
      prob_death_icu = list(has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE),
      prob_death_non_hosp = list(has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE),
      rand_beta_factors = list(has_default = FALSE, default_value = NULL, rank = 1, min = -Inf, max = Inf, integer = FALSE),
-     susceptibility = list(has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE),
      susceptibility_asymp = list(has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE),
      susceptibility_symp = list(has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE),
      symp_trans = list(has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE),

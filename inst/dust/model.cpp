@@ -60,7 +60,6 @@ __host__ __device__ T odin_max(T x, T y) {
 // [[dust::param(prob_death_icu, has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(prob_death_non_hosp, has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(rand_beta_factors, has_default = FALSE, default_value = NULL, rank = 1, min = -Inf, max = Inf, integer = FALSE)]]
-// [[dust::param(susceptibility, has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(susceptibility_asymp, has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(susceptibility_symp, has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(symp_trans, has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
@@ -625,11 +624,6 @@ public:
     int dim_rel_strain_2;
     int dim_rel_strain_3;
     int dim_spont_behav_change_params;
-    int dim_susceptibility;
-    int dim_susceptibility_1;
-    int dim_susceptibility_12;
-    int dim_susceptibility_2;
-    int dim_susceptibility_3;
     int dim_susceptibility_asymp;
     int dim_susceptibility_asymp_1;
     int dim_susceptibility_asymp_12;
@@ -826,7 +820,6 @@ public:
     real_type rand_beta_sd;
     std::vector<real_type> spont_behav_change_params;
     real_type steps_per_day;
-    std::vector<real_type> susceptibility;
     std::vector<real_type> susceptibility_asymp;
     std::vector<real_type> susceptibility_symp;
     std::vector<real_type> symp_asymp_effect;
@@ -2077,9 +2070,6 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_rel_strain_1 = shared->n;
   shared->dim_rel_strain_2 = shared->n_vac;
   shared->dim_rel_strain_3 = shared->n_strain;
-  shared->dim_susceptibility_1 = shared->n;
-  shared->dim_susceptibility_2 = shared->n_vac;
-  shared->dim_susceptibility_3 = shared->n_strain;
   shared->dim_susceptibility_asymp_1 = shared->n;
   shared->dim_susceptibility_asymp_2 = shared->n_vac;
   shared->dim_susceptibility_asymp_3 = shared->n_strain;
@@ -2338,8 +2328,6 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_prob_death_non_hosp_12 = shared->dim_prob_death_non_hosp_1 * shared->dim_prob_death_non_hosp_2;
   shared->dim_rel_strain = shared->dim_rel_strain_1 * shared->dim_rel_strain_2 * shared->dim_rel_strain_3;
   shared->dim_rel_strain_12 = shared->dim_rel_strain_1 * shared->dim_rel_strain_2;
-  shared->dim_susceptibility = shared->dim_susceptibility_1 * shared->dim_susceptibility_2 * shared->dim_susceptibility_3;
-  shared->dim_susceptibility_12 = shared->dim_susceptibility_1 * shared->dim_susceptibility_2;
   shared->dim_susceptibility_asymp = shared->dim_susceptibility_asymp_1 * shared->dim_susceptibility_asymp_2 * shared->dim_susceptibility_asymp_3;
   shared->dim_susceptibility_asymp_12 = shared->dim_susceptibility_asymp_1 * shared->dim_susceptibility_asymp_2;
   shared->dim_susceptibility_symp = shared->dim_susceptibility_symp_1 * shared->dim_susceptibility_symp_2 * shared->dim_susceptibility_symp_3;
@@ -2523,7 +2511,6 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->prob_death_hosp = user_get_array_fixed<real_type, 3>(user, "prob_death_hosp", shared->prob_death_hosp, {shared->dim_prob_death_hosp_1, shared->dim_prob_death_hosp_2, shared->dim_prob_death_hosp_3}, NA_REAL, NA_REAL);
   shared->prob_death_icu = user_get_array_fixed<real_type, 3>(user, "prob_death_icu", shared->prob_death_icu, {shared->dim_prob_death_icu_1, shared->dim_prob_death_icu_2, shared->dim_prob_death_icu_3}, NA_REAL, NA_REAL);
   shared->prob_death_non_hosp = user_get_array_fixed<real_type, 3>(user, "prob_death_non_hosp", shared->prob_death_non_hosp, {shared->dim_prob_death_non_hosp_1, shared->dim_prob_death_non_hosp_2, shared->dim_prob_death_non_hosp_3}, NA_REAL, NA_REAL);
-  shared->susceptibility = user_get_array_fixed<real_type, 3>(user, "susceptibility", shared->susceptibility, {shared->dim_susceptibility_1, shared->dim_susceptibility_2, shared->dim_susceptibility_3}, NA_REAL, NA_REAL);
   shared->susceptibility_asymp = user_get_array_fixed<real_type, 3>(user, "susceptibility_asymp", shared->susceptibility_asymp, {shared->dim_susceptibility_asymp_1, shared->dim_susceptibility_asymp_2, shared->dim_susceptibility_asymp_3}, NA_REAL, NA_REAL);
   shared->susceptibility_symp = user_get_array_fixed<real_type, 3>(user, "susceptibility_symp", shared->susceptibility_symp, {shared->dim_susceptibility_symp_1, shared->dim_susceptibility_symp_2, shared->dim_susceptibility_symp_3}, NA_REAL, NA_REAL);
   shared->symp_trans = user_get_array_fixed<real_type, 3>(user, "symp_trans", shared->symp_trans, {shared->dim_symp_trans_1, shared->dim_symp_trans_2, shared->dim_symp_trans_3}, NA_REAL, NA_REAL);

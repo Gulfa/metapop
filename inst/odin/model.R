@@ -525,7 +525,7 @@ dim(icu_prob)<- c(n, n_vac, n_strain)
 dim(prob_death_non_hosp)<- c(n, n_vac, n_strain)
 dim(prob_death_hosp)<- c(n, n_vac, n_strain)
 dim(prob_death_icu)<- c(n, n_vac, n_strain)
-dim(susceptibility)<- c(n, n_vac, n_strain)
+#dim(susceptibility)<- c(n, n_vac, n_strain)
 dim(transmisibility)<- c(n, n_vac, n_strain)
 dim(waning_immunity_vax)<- c(n, n_vac, n_strain)
 #dim(prob_misc)<- c(n, n_vac, n_strain)
@@ -559,7 +559,7 @@ time_before_death_icu <- user()
 
 
 
-susceptibility[,,] <- user()
+#susceptibility[,,] <- user()
 transmisibility[,,] <- user()
 susceptibility_asymp[,,] <- user()
 susceptibility_symp[,,] <- user()

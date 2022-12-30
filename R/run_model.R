@@ -9,7 +9,7 @@ NULL
 #' The number of particles gives the number of samples and threads the number of cores used to sample
 #' @export
 run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1", run_params=list(), silent=TRUE, estimate_Rt=FALSE,Rt_per_day=1,
-                       return_summary_function=NULL){
+                       return_summary_function=NULL, deterministic=FALSE){
   params <- fix_beta_mode_params(params)
   if(!silent){
     print(glue::glue("Running {run_name}"))
@@ -20,6 +20,7 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
                          time=1,
                          n_particles = N_particles,
                          n_threads = N_threads,
+                         deterministic=deterministic
                          )
 
   
@@ -77,7 +78,8 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
 #' Function to run multiple param sets
 #'
 #' @export
-run_param_sets <- function(paramsets, L=100, N_particles=1, N_threads_internal=1, N_threads_external=1, silent=TRUE, return_summary_function=NULL){
+run_param_sets <- function(paramsets, L=100, N_particles=1, N_threads_internal=1, 
+                 N_threads_external=1, silent=TRUE, return_summary_function=NULL, deterministic=FALSE){
 
   
   results <- parallel::mclapply(
@@ -91,6 +93,7 @@ run_param_sets <- function(paramsets, L=100, N_particles=1, N_threads_internal=1
                                       run_params=x$run_params,
                                       run_name=x$name,
                                       silent=silent,
+                                      deterministic = deterministic,
                                       return_summary_function=return_summary_function)
                          }, mc.cores=N_threads_external)
 
