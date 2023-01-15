@@ -184,7 +184,7 @@ refine_results_odin <- function(res, params){
     res <- add_per_vaccine_prio_group(res, "tot_resp", params)
     res <- add_per_vaccine_prio_group(res, "tot_hosp", params)
     res <- add_per_vaccine_prio_group(res, "D", params)
-    res <- add_per_vaccine_prio_group(res, "tot_vac", params, only_reg=TRUE)
+    res <- add_per_vaccine_prio_group(res, "tot_vac_adm", params, only_reg=TRUE)
 
   }
   if(params$n_strain > 1){
@@ -213,8 +213,10 @@ refine_results_odin <- function(res, params){
   res <- cbind(res, ward=rowSums(res[, c(paste0("H[",1:n,"]"), paste0("ICU_P[",1:n,"]"), paste0("ICU_H[",1:n,"]"))]))
   res <- cbind(res, hosp=rowSums(res[, c("ward", paste0("ICU_R[",1:n,"]"))]))
   res <- cbind(res, resp=rowSums(res[, paste0("ICU_R[",1:n,"]")]))
-#  incidence <- c(res[2:N, "tot_infected"] - res[1:(N-1), "tot_infected"],0)
-#  res <- cbind(res, incidence=incidence)
+  if(! "incidence" %in% colnames(res)){
+    incidence <- c(res[2:N, "tot_infected"] - res[1:(N-1), "tot_infected"],0)
+    res <- cbind(res, incidence=incidence)
+  }
   hosp_incidence <- c(res[2:N, "tot_hosp"] - res[1:(N-1), "tot_hosp"],0)
   res <- cbind(res, hosp_incidence=hosp_incidence)
   return(data.table::data.table(res))
