@@ -1148,7 +1148,7 @@ public:
     }
     for (int i = 1; i <= shared->dim_beta_spont_behaviour_1; ++i) {
       for (int j = 1; j <= shared->dim_beta_spont_behaviour_2; ++j) {
-        state_next[shared->offset_variable_beta_spont_behaviour + i - 1 + shared->dim_beta_spont_behaviour_1 * (j - 1)] = shared->spont_behav_change_params[0] * (1 - static_cast<real_type>(0.80000000000000004) * (internal.beta_reduction[shared->dim_beta_reduction_1 * (j - 1) + i - 1] + contact_change[shared->dim_contact_change_1 * (j - 1) + i - 1]) + static_cast<real_type>(0.69999999999999996) * (internal.beta_reduction[shared->dim_beta_reduction_1 * (j - 1) + i - 1] * contact_change[shared->dim_contact_change_1 * (j - 1) + i - 1]));
+        state_next[shared->offset_variable_beta_spont_behaviour + i - 1 + shared->dim_beta_spont_behaviour_1 * (j - 1)] = shared->spont_behav_change_params[0] * (1 - shared->spont_behav_change_params[4] * (internal.beta_reduction[shared->dim_beta_reduction_1 * (j - 1) + i - 1] + contact_change[shared->dim_contact_change_1 * (j - 1) + i - 1]) + shared->spont_behav_change_params[5] * (internal.beta_reduction[shared->dim_beta_reduction_1 * (j - 1) + i - 1] * contact_change[shared->dim_contact_change_1 * (j - 1) + i - 1]));
       }
     }
     state_next[5] = e_int + r * shared->dt;
@@ -1264,7 +1264,7 @@ public:
     for (int i = 1; i <= shared->dim_rel_strain_1; ++i) {
       for (int j = 1; j <= shared->dim_rel_strain_2; ++j) {
         for (int k = 1; k <= shared->dim_rel_strain_3; ++k) {
-          internal.rel_strain[i - 1 + shared->dim_rel_strain_1 * (j - 1) + shared->dim_rel_strain_12 * (k - 1)] = internal.p_SE[shared->dim_p_SE_12 * (k - 1) + shared->dim_p_SE_1 * (j - 1) + i - 1] / (real_type) odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12);
+          internal.rel_strain[i - 1 + shared->dim_rel_strain_1 * (j - 1) + shared->dim_rel_strain_12 * (k - 1)] = (shared->n_strain == 1 ? 1 : (internal.p_SE[shared->dim_p_SE_12 * (k - 1) + shared->dim_p_SE_1 * (j - 1) + i - 1] / (real_type) odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12)));
         }
       }
     }
@@ -1714,7 +1714,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   model::internal_type internal;
   shared->dim_beta_cut_peak_param = 4;
   shared->dim_change_factor = 4;
-  shared->dim_spont_behav_change_params = 4;
+  shared->dim_spont_behav_change_params = 6;
   shared->dim_threshold = 2;
   shared->initial_e_int = 0;
   shared->initial_incidence_int = 0;

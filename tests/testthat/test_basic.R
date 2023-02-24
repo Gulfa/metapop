@@ -81,7 +81,7 @@ basic_params <- function(N=9, n_vac=2, L=100, n_strain=1){
     change_factor=c(0,0,0,0),
     threshold=c(100,0),
     beta_mode=1,
-    spont_behav_change_params=c(0,0,0,0),
+    spont_behav_change_params=c(0,0,0,0,0,0),
     expected_health_loss=array(1, dim=c(N,n_vac))
     
 
@@ -169,10 +169,6 @@ test_that("Test complicated waning from R with strains", {
   expect_gte(mean(results[t==100,get("S[1]")]), 4e5)
   expect_equal(mean(results[t==100,get("S[4]")]), 0)
   expect_gte(mean(results[t==100,get("S[3]")]), 8e5)
-
- 
-
-
 })
 
 
@@ -235,7 +231,7 @@ test_that("Test Waning infection", {
   
 })
 
-test_that("Test Rt", {
+test_that("Test Rt calculation", {
   params <- basic_params(N=5, n_vac=2, L=500)
   params$I_ini[,,] <- 1000
   beta_1 <- fix_beta_large(params, params$S_ini, params$I_ini, 1, beta=params$beta_day[1,], use_eig=TRUE)
@@ -244,7 +240,28 @@ test_that("Test Rt", {
   results <- run_params(params, L=50, 1, 1)
   inc <- results[, mean(get("incidence")), by=t]
 
-  expect_lte(abs(inc[t==200, V1] - inc[t==400, V1]), 200)
+  expect_lte(abs(inc[t==200, V1] - inc[t==400, V1]), 100)
+
+  # complicated contact matrix, susceptibility and transmissibility
+  params <- basic_params(N=5, n_vac=2, L=168*10)
+  params$S_ini <- array((1:5)*1e5, dim=c(5,2))
+  params$S_ini[,2] <- 0
+  params$contact_matrix <- matrix(1:25, ncol=5, nrow=5)
+  params$susceptibility_asymp <- array(c(0.1, 0.4, 0.7, 0.9, 1.0), dim=c(5,2,1))
+  params$susceptibility_symp <- array(c(0.5, 0.8, 0.8, 0.9, 0.5), dim=c(5,2,1))
+  params$transmisibility <- array(c(0.4, 1.0, 0.5, 0, 0), dim=c(5,2,1))
+  params$I_ini[,,] <- 200
+  beta_1 <- fix_beta_large(params, params$S_ini, params$I_ini, 1, beta=params$beta_day[1,], use_eig=TRUE)
+  params$beta_day <- params$beta_day*beta_1
+  params$dt <- 0.1
+  results <- run_params(params, L=168, 3, 3)
+  inc <- results[, mean(get("incidence")), by=t]
+  expect_lte(abs(inc[t==200, V1] - inc[t==400, V1]), 100)
+
+
+
+
+
   ## plot(results[, mean(get("I[1]")), by=t])
   ## plot(results[, mean(get("P[1]")), by=t])
   ## plot(results[, mean(incidence), by=t])
@@ -337,7 +354,7 @@ test_that("Test cut_peak", {
 test_that("Test spontaneous behviour change", {
   params <- basic_params(n_vac=1, n_strain=1, L=200)
   params$beta_mode <- 4
-  params$spont_behav_change_params <- c(0.05, 1, 2000, 4/(0.9*2000))
+  params$spont_behav_change_params <- c(0.05, 1, 2000, 4/(0.9*2000), 0.8, 0.7)
   params$expected_health_loss <- array(0, dim=c(9,1))
   results1 <- run_params(params, L=200, 3, 3)
 

@@ -57,7 +57,7 @@ update(log_beta) <- if(step %% (rand_beta_days*steps_per_day)==0) log_beta + rno
 ## Spontaneous behaviour change
 ## Here beta_day is treated as the "government policy" and the total effect is a combination 
 
-dim(spont_behav_change_params) <- 4 # beta_0 beta without any interventions or regulation, T - time horizon, v - cost of isolation, a the speed of transition in logit function
+dim(spont_behav_change_params) <- 6 # beta_0 beta without any interventions or regulation, T - time horizon, v - cost of isolation, a the speed of transition in logit function, parameter 1 for combing self reg and gov, param 2 for combining self reg and gov
 spont_behav_change_params[] <- user(0)
 dim(expected_health_loss) <- c(n, n_vac)
 expected_health_loss[,] <- user(0)
@@ -79,7 +79,7 @@ beta_reduction[,] <- 1 - beta_day[step, i] /spont_behav_change_params[1]
 initial(beta_spont_behaviour[,]) <- beta_day[1, i]
 dim(beta_spont_behaviour) <- c(n,n_vac)
 
-update(beta_spont_behaviour[,]) <- spont_behav_change_params[1]*(1 - 0.8*(beta_reduction[i,j] + contact_change[i,j]) + 0.7*(beta_reduction[i,j]*contact_change[i,j]))
+update(beta_spont_behaviour[,]) <- spont_behav_change_params[1]*(1 - spont_behav_change_params[5]*(beta_reduction[i,j] + contact_change[i,j]) + spont_behav_change_params[6]*(beta_reduction[i,j]*contact_change[i,j]))
 
 
 
@@ -222,7 +222,7 @@ dim(incidence) <- n_strain
 
 ## HARD CODED 2 strains
 n_SE_tot[,] <- rbinom(S[i,j] - n_waning[i,j], sum(p_SE[i,j,]))
-rel_strain[,,] <- p_SE[i,j,k]/sum(p_SE[i,j,])
+rel_strain[,,] <- if(n_strain==1) 1 else (p_SE[i,j,k]/sum(p_SE[i,j,]))
 n_SE[,,] <- if(k==1 || n_strain==1) rbinom(n_SE_tot[i,j],rel_strain[i,j,k]) else
            (if (n_strain==2) n_SE_tot[i,j] - n_SE[i,j,1] else (
                 if(k==2) rbinom(n_SE_tot[i,j] - n_SE[i,j,1], rel_strain[i,j,2]/(rel_strain[i,j,2] + rel_strain[i,j,3])) else(

@@ -8,12 +8,12 @@ dust_metapop_gpu_info <- function() {
   .Call(`_metapop_dust_metapop_gpu_info`)
 }
 
-dust_cpu_metapop_alloc <- function(r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
-  .Call(`_metapop_dust_cpu_metapop_alloc`, r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
+dust_cpu_metapop_alloc <- function(r_pars, pars_multi, r_time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
+  .Call(`_metapop_dust_cpu_metapop_alloc`, r_pars, pars_multi, r_time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
 }
 
-dust_cpu_metapop_run <- function(ptr, time_end) {
-  .Call(`_metapop_dust_cpu_metapop_run`, ptr, time_end)
+dust_cpu_metapop_run <- function(ptr, r_time_end) {
+  .Call(`_metapop_dust_cpu_metapop_run`, ptr, r_time_end)
 }
 
 dust_cpu_metapop_simulate <- function(ptr, time_end) {
@@ -88,12 +88,12 @@ dust_metapopfull_gpu_info <- function() {
   .Call(`_metapop_dust_metapopfull_gpu_info`)
 }
 
-dust_cpu_metapopfull_alloc <- function(r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
-  .Call(`_metapop_dust_cpu_metapopfull_alloc`, r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
+dust_cpu_metapopfull_alloc <- function(r_pars, pars_multi, r_time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
+  .Call(`_metapop_dust_cpu_metapopfull_alloc`, r_pars, pars_multi, r_time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
 }
 
-dust_cpu_metapopfull_run <- function(ptr, time_end) {
-  .Call(`_metapop_dust_cpu_metapopfull_run`, ptr, time_end)
+dust_cpu_metapopfull_run <- function(ptr, r_time_end) {
+  .Call(`_metapop_dust_cpu_metapopfull_run`, ptr, r_time_end)
 }
 
 dust_cpu_metapopfull_simulate <- function(ptr, time_end) {
@@ -168,12 +168,12 @@ dust_mod_gpu_info <- function() {
   .Call(`_metapop_dust_mod_gpu_info`)
 }
 
-dust_cpu_mod_alloc <- function(r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
-  .Call(`_metapop_dust_cpu_mod_alloc`, r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
+dust_cpu_mod_alloc <- function(r_pars, pars_multi, r_time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
+  .Call(`_metapop_dust_cpu_mod_alloc`, r_pars, pars_multi, r_time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
 }
 
-dust_cpu_mod_run <- function(ptr, time_end) {
-  .Call(`_metapop_dust_cpu_mod_run`, ptr, time_end)
+dust_cpu_mod_run <- function(ptr, r_time_end) {
+  .Call(`_metapop_dust_cpu_mod_run`, ptr, r_time_end)
 }
 
 dust_cpu_mod_simulate <- function(ptr, time_end) {
@@ -248,12 +248,12 @@ dust_model_gpu_info <- function() {
   .Call(`_metapop_dust_model_gpu_info`)
 }
 
-dust_cpu_model_alloc <- function(r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
-  .Call(`_metapop_dust_cpu_model_alloc`, r_pars, pars_multi, time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
+dust_cpu_model_alloc <- function(r_pars, pars_multi, r_time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control) {
+  .Call(`_metapop_dust_cpu_model_alloc`, r_pars, pars_multi, r_time, r_n_particles, n_threads, r_seed, deterministic, gpu_config, ode_control)
 }
 
-dust_cpu_model_run <- function(ptr, time_end) {
-  .Call(`_metapop_dust_cpu_model_run`, ptr, time_end)
+dust_cpu_model_run <- function(ptr, r_time_end) {
+  .Call(`_metapop_dust_cpu_model_run`, ptr, r_time_end)
 }
 
 dust_cpu_model_simulate <- function(ptr, time_end) {

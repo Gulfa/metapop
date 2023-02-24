@@ -5,7 +5,7 @@
 get_filter_tot_hosp <- function(incidence,params, n_particles=10, n_threads=10, data_time_interval="day" ){
   
   dust_model <- model$new(pars = params,
-                          step = 1,
+                          time=1,
                           n_particles = 1,
                           n_threads = 1
                           )
