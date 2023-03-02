@@ -1120,11 +1120,6 @@ public:
         }
       }
     }
-    for (int i = 1; i <= shared->dim_n_waning_tmp_1; ++i) {
-      for (int j = 1; j <= shared->dim_n_waning_tmp_2; ++j) {
-        internal.n_waning_tmp[i - 1 + shared->dim_n_waning_tmp_1 * (j - 1)] = dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1], shared->p_waning[shared->dim_p_waning_1 * (j - 1) + i - 1]);
-      }
-    }
     for (int i = 1; i <= shared->dim_A_1; ++i) {
       for (int j = 1; j <= shared->dim_A_2; ++j) {
         for (int k = 1; k <= shared->dim_A_3; ++k) {
@@ -1190,11 +1185,6 @@ public:
         }
       }
     }
-    for (int i = 1; i <= shared->dim_n_waning_1; ++i) {
-      for (int j = 1; j <= shared->dim_n_waning_2; ++j) {
-        internal.n_waning[i - 1 + shared->dim_n_waning_1 * (j - 1)] = (shared->include_waning == 1 ? (j != shared->n_vac ? dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1], shared->p_waning[shared->dim_p_waning_1 * (j - 1) + i - 1]) : (- odin_sum2<real_type>(internal.n_waning.data(), i - 1, i, 0, j - 1, shared->dim_n_waning_1))) : ((shared->include_waning == 2 ? (shared->vac_struct_length == 0 ? (j != shared->n_vac ? internal.n_waning_tmp[shared->dim_n_waning_tmp_1 * (j - 1) + i - 1] - internal.n_waning_tmp[shared->dim_n_waning_tmp_1 * (j + 1 - 1) + i - 1] : (internal.n_waning_tmp[shared->dim_n_waning_tmp_1 * (j - 1) + i - 1])) : ((fmodr<real_type>(j, shared->vac_struct_length) != 0 ? internal.n_waning_tmp[shared->dim_n_waning_tmp_1 * (j - 1) + i - 1] - internal.n_waning_tmp[shared->dim_n_waning_tmp_1 * (j + 1 - 1) + i - 1] : (internal.n_waning_tmp[shared->dim_n_waning_tmp_1 * (j - 1) + i - 1])))) : 0)));
-      }
-    }
     for (int i = 1; i <= shared->dim_p_SE_1; ++i) {
       for (int j = 1; j <= shared->dim_p_SE_2; ++j) {
         for (int k = 1; k <= shared->dim_p_SE_3; ++k) {
@@ -1258,7 +1248,7 @@ public:
     }
     for (int i = 1; i <= shared->dim_n_SE_tot_1; ++i) {
       for (int j = 1; j <= shared->dim_n_SE_tot_2; ++j) {
-        internal.n_SE_tot[i - 1 + shared->dim_n_SE_tot_1 * (j - 1)] = dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1] - internal.n_waning[shared->dim_n_waning_1 * (j - 1) + i - 1], odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12));
+        internal.n_SE_tot[i - 1 + shared->dim_n_SE_tot_1 * (j - 1)] = dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1], odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12));
       }
     }
     for (int i = 1; i <= shared->dim_rel_strain_1; ++i) {
@@ -1306,7 +1296,7 @@ public:
     for (int i = 1; i <= shared->dim_n_SE_1; ++i) {
       for (int j = 1; j <= shared->dim_n_SE_2; ++j) {
         for (int k = 1; k <= shared->dim_n_SE_3; ++k) {
-          internal.n_SE[i - 1 + shared->dim_n_SE_1 * (j - 1) + shared->dim_n_SE_12 * (k - 1)] = (k == 1 || shared->n_strain == 1 ? dust::random::binomial<real_type>(rng_state, internal.n_SE_tot[shared->dim_n_SE_tot_1 * (j - 1) + i - 1], internal.rel_strain[shared->dim_rel_strain_12 * (k - 1) + shared->dim_rel_strain_1 * (j - 1) + i - 1]) : ((shared->n_strain == 2 ? internal.n_SE_tot[shared->dim_n_SE_tot_1 * (j - 1) + i - 1] - internal.n_SE[shared->dim_n_SE_12 * 0 + shared->dim_n_SE_1 * (j - 1) + i - 1] : ((k == 2 ? dust::random::binomial<real_type>(rng_state, internal.n_SE_tot[shared->dim_n_SE_tot_1 * (j - 1) + i - 1] - internal.n_SE[shared->dim_n_SE_12 * 0 + shared->dim_n_SE_1 * (j - 1) + i - 1], internal.rel_strain[shared->dim_rel_strain_12 * 1 + shared->dim_rel_strain_1 * (j - 1) + i - 1] / (real_type) (internal.rel_strain[shared->dim_rel_strain_12 * 1 + shared->dim_rel_strain_1 * (j - 1) + i - 1] + internal.rel_strain[shared->dim_rel_strain_12 * 2 + shared->dim_rel_strain_1 * (j - 1) + i - 1])) : ((k == 3 ? internal.n_SE_tot[shared->dim_n_SE_tot_1 * (j - 1) + i - 1] - internal.n_SE[shared->dim_n_SE_12 * 1 + shared->dim_n_SE_1 * (j - 1) + i - 1] - internal.n_SE[shared->dim_n_SE_12 * 0 + shared->dim_n_SE_1 * (j - 1) + i - 1] : 0)))))));
+          internal.n_SE[i - 1 + shared->dim_n_SE_1 * (j - 1) + shared->dim_n_SE_12 * (k - 1)] = (k == 1 || shared->n_strain == 1 ? internal.n_SE_tot[shared->dim_n_SE_tot_1 * (j - 1) + i - 1] : ((shared->n_strain == 2 ? internal.n_SE_tot[shared->dim_n_SE_tot_1 * (j - 1) + i - 1] - internal.n_SE[shared->dim_n_SE_12 * 0 + shared->dim_n_SE_1 * (j - 1) + i - 1] : ((k == 2 ? dust::random::binomial<real_type>(rng_state, internal.n_SE_tot[shared->dim_n_SE_tot_1 * (j - 1) + i - 1] - internal.n_SE[shared->dim_n_SE_12 * 0 + shared->dim_n_SE_1 * (j - 1) + i - 1], internal.rel_strain[shared->dim_rel_strain_12 * 1 + shared->dim_rel_strain_1 * (j - 1) + i - 1] / (real_type) (internal.rel_strain[shared->dim_rel_strain_12 * 1 + shared->dim_rel_strain_1 * (j - 1) + i - 1] + internal.rel_strain[shared->dim_rel_strain_12 * 2 + shared->dim_rel_strain_1 * (j - 1) + i - 1])) : ((k == 3 ? internal.n_SE_tot[shared->dim_n_SE_tot_1 * (j - 1) + i - 1] - internal.n_SE[shared->dim_n_SE_12 * 1 + shared->dim_n_SE_1 * (j - 1) + i - 1] - internal.n_SE[shared->dim_n_SE_12 * 0 + shared->dim_n_SE_1 * (j - 1) + i - 1] : 0)))))));
         }
       }
     }
@@ -1360,6 +1350,11 @@ public:
         internal.n_vac_now[i - 1 + shared->dim_n_vac_now_1 * (j - 1)] = (- internal.vax_time_step[shared->dim_vax_time_step_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) > S[shared->dim_S_1 * (j - 1) + i - 1] ? - S[shared->dim_S_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) : dust::math::round(internal.vax_time_step[shared->dim_vax_time_step_1 * (j - 1) + i - 1] * S[shared->dim_S_1 * 0 + i - 1] / (real_type) N[shared->dim_N_1 * 0 + i - 1]));
       }
     }
+    for (int i = 1; i <= shared->dim_n_waning_tmp_1; ++i) {
+      for (int j = 1; j <= shared->dim_n_waning_tmp_2; ++j) {
+        internal.n_waning_tmp[i - 1 + shared->dim_n_waning_tmp_1 * (j - 1)] = dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1] - odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12), shared->p_waning[shared->dim_p_waning_1 * (j - 1) + i - 1]);
+      }
+    }
     for (int i = 1; i <= shared->dim_B_D_1; ++i) {
       for (int j = 1; j <= shared->dim_B_D_2; ++j) {
         for (int k = 1; k <= shared->dim_B_D_3; ++k) {
@@ -1378,18 +1373,16 @@ public:
         }
       }
     }
-    for (int i = 1; i <= shared->dim_N_imp_non_zero_1; ++i) {
-      for (int j = 1; j <= shared->dim_N_imp_non_zero_2; ++j) {
-        for (int k = 1; k <= shared->dim_N_imp_non_zero_3; ++k) {
-          internal.N_imp_non_zero[i - 1 + shared->dim_N_imp_non_zero_1 * (j - 1) + shared->dim_N_imp_non_zero_12 * (k - 1)] = (S[shared->dim_S_1 * (j - 1) + i - 1] - odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) + internal.n_vac_now[shared->dim_n_vac_now_1 * (j - 1) + i - 1] - internal.n_waning[shared->dim_n_waning_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_RS.data(), i - 1, i, j - 1, j, 0, shared->dim_n_RS_3, shared->dim_n_RS_1, shared->dim_n_RS_12) - odin_sum3<real_type>(internal.N_imp.data(), i - 1, i, j - 1, j, 0, shared->dim_N_imp_3, shared->dim_N_imp_1, shared->dim_N_imp_12) < 0 ? 0 : internal.N_imp[shared->dim_N_imp_12 * (k - 1) + shared->dim_N_imp_1 * (j - 1) + i - 1]);
-        }
-      }
-    }
     for (int i = 1; i <= shared->dim_n_SEi_1; ++i) {
       for (int j = 1; j <= shared->dim_n_SEi_2; ++j) {
         for (int k = 1; k <= shared->dim_n_SEi_3; ++k) {
           internal.n_SEi[i - 1 + shared->dim_n_SEi_1 * (j - 1) + shared->dim_n_SEi_12 * (k - 1)] = internal.n_SE[shared->dim_n_SE_12 * (k - 1) + shared->dim_n_SE_1 * (j - 1) + i - 1] - internal.n_SEa[shared->dim_n_SEa_12 * (k - 1) + shared->dim_n_SEa_1 * (j - 1) + i - 1];
         }
+      }
+    }
+    for (int i = 1; i <= shared->dim_n_waning_1; ++i) {
+      for (int j = 1; j <= shared->dim_n_waning_2; ++j) {
+        internal.n_waning[i - 1 + shared->dim_n_waning_1 * (j - 1)] = (shared->include_waning == 1 ? (j != shared->n_vac ? dust::random::binomial<real_type>(rng_state, S[shared->dim_S_1 * (j - 1) + i - 1], shared->p_waning[shared->dim_p_waning_1 * (j - 1) + i - 1]) : (- odin_sum2<real_type>(internal.n_waning.data(), i - 1, i, 0, j - 1, shared->dim_n_waning_1))) : ((shared->include_waning == 2 ? (j == 1 ? - internal.n_waning_tmp[shared->dim_n_waning_tmp_1 * (j + 1 - 1) + i - 1] : ((j != shared->n_vac ? internal.n_waning_tmp[shared->dim_n_waning_tmp_1 * (j - 1) + i - 1] - internal.n_waning_tmp[shared->dim_n_waning_tmp_1 * (j + 1 - 1) + i - 1] : (internal.n_waning_tmp[shared->dim_n_waning_tmp_1 * (j - 1) + i - 1])))) : 0)));
       }
     }
     real_type new_beta_thresh = (trigger == 1 ? shared->change_factor[0] + 1 / (real_type) shared->threshold[0] * (shared->change_factor[1] * r + shared->change_factor[2] * e_int + shared->change_factor[3] * (dr_dt)) : beta_thresh);
@@ -1405,6 +1398,13 @@ public:
         state_next[shared->offset_variable_tot_vac + i - 1 + shared->dim_tot_vac_1 * (j - 1)] = tot_vac[shared->dim_tot_vac_1 * (j - 1) + i - 1] + internal.n_vac_now[shared->dim_n_vac_now_1 * (j - 1) + i - 1];
       }
     }
+    for (int i = 1; i <= shared->dim_N_imp_non_zero_1; ++i) {
+      for (int j = 1; j <= shared->dim_N_imp_non_zero_2; ++j) {
+        for (int k = 1; k <= shared->dim_N_imp_non_zero_3; ++k) {
+          internal.N_imp_non_zero[i - 1 + shared->dim_N_imp_non_zero_1 * (j - 1) + shared->dim_N_imp_non_zero_12 * (k - 1)] = (S[shared->dim_S_1 * (j - 1) + i - 1] - odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) + internal.n_vac_now[shared->dim_n_vac_now_1 * (j - 1) + i - 1] - internal.n_waning[shared->dim_n_waning_1 * (j - 1) + i - 1] + internal.waning_tmp[shared->dim_waning_tmp_1 * (j - 1) + i - 1] - odin_sum3<real_type>(internal.N_imp.data(), i - 1, i, j - 1, j, 0, shared->dim_N_imp_3, shared->dim_N_imp_1, shared->dim_N_imp_12) < 0 ? 0 : internal.N_imp[shared->dim_N_imp_12 * (k - 1) + shared->dim_N_imp_1 * (j - 1) + i - 1]);
+        }
+      }
+    }
     for (int i = 1; i <= shared->dim_Es_1; ++i) {
       for (int j = 1; j <= shared->dim_Es_2; ++j) {
         for (int k = 1; k <= shared->dim_Es_3; ++k) {
@@ -1412,6 +1412,7 @@ public:
         }
       }
     }
+    state_next[8] = (new_beta_thresh > shared->threshold_max ? shared->threshold_max : ((new_beta_thresh < shared->threshold_min ? shared->threshold_min : new_beta_thresh)));
     for (int i = 1; i <= shared->dim_I_1; ++i) {
       for (int j = 1; j <= shared->dim_I_2; ++j) {
         for (int k = 1; k <= shared->dim_I_3; ++k) {
@@ -1424,7 +1425,6 @@ public:
         state_next[shared->offset_variable_S + i - 1 + shared->dim_S_1 * (j - 1)] = S[shared->dim_S_1 * (j - 1) + i - 1] - odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) + internal.n_vac_now[shared->dim_n_vac_now_1 * (j - 1) + i - 1] - internal.n_waning[shared->dim_n_waning_1 * (j - 1) + i - 1] + internal.waning_tmp[shared->dim_waning_tmp_1 * (j - 1) + i - 1] - odin_sum3<real_type>(internal.N_imp_non_zero.data(), i - 1, i, j - 1, j, 0, shared->dim_N_imp_non_zero_3, shared->dim_N_imp_non_zero_1, shared->dim_N_imp_non_zero_12);
       }
     }
-    state_next[8] = (new_beta_thresh > shared->threshold_max ? shared->threshold_max : ((new_beta_thresh < shared->threshold_min ? shared->threshold_min : new_beta_thresh)));
   }
 private:
   std::shared_ptr<const shared_type> shared;

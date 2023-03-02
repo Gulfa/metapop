@@ -77,7 +77,7 @@ dust_cpu_metapop_set_stochastic_schedule <- function(ptr, time) {
 }
 
 dust_cpu_metapop_ode_statistics <- function(ptr) {
-  invisible(.Call(`_metapop_dust_cpu_metapop_ode_statistics`, ptr))
+  .Call(`_metapop_dust_cpu_metapop_ode_statistics`, ptr)
 }
 
 dust_metapopfull_capabilities <- function() {
@@ -157,7 +157,7 @@ dust_cpu_metapopfull_set_stochastic_schedule <- function(ptr, time) {
 }
 
 dust_cpu_metapopfull_ode_statistics <- function(ptr) {
-  invisible(.Call(`_metapop_dust_cpu_metapopfull_ode_statistics`, ptr))
+  .Call(`_metapop_dust_cpu_metapopfull_ode_statistics`, ptr)
 }
 
 dust_mod_capabilities <- function() {
@@ -237,7 +237,7 @@ dust_cpu_mod_set_stochastic_schedule <- function(ptr, time) {
 }
 
 dust_cpu_mod_ode_statistics <- function(ptr) {
-  invisible(.Call(`_metapop_dust_cpu_mod_ode_statistics`, ptr))
+  .Call(`_metapop_dust_cpu_mod_ode_statistics`, ptr)
 }
 
 dust_model_capabilities <- function() {
@@ -317,5 +317,5 @@ dust_cpu_model_set_stochastic_schedule <- function(ptr, time) {
 }
 
 dust_cpu_model_ode_statistics <- function(ptr) {
-  invisible(.Call(`_metapop_dust_cpu_model_ode_statistics`, ptr))
+  .Call(`_metapop_dust_cpu_model_ode_statistics`, ptr)
 }

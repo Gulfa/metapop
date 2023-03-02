@@ -114,7 +114,7 @@ beta[,] <- if(beta_mode==1) beta_day[step, i] else
 
 n_vac_now[,] <- if (-vax_time_step[i,j] + sum(n_SE[i,j,])  > S[i,j]) - S[i,j] +  sum(n_SE[i,j,])  else round(vax_time_step[i,j]*S[i,1]/N[i,1]) 
 
-N_imp_non_zero[,,] <- if(S[i,j] - sum(n_SE[i,j,]) +  n_vac_now[i,j] - n_waning[i,j] + sum(n_RS[i,j,]) -sum(N_imp[i,j,])<0) 0 else N_imp[i,j,k]
+N_imp_non_zero[,,] <- if(S[i,j] - sum(n_SE[i,j,]) +  n_vac_now[i,j] - n_waning[i,j] + waning_tmp[i,j] -sum(N_imp[i,j,])<0) 0 else N_imp[i,j,k]
 
 dim(n_vac_now) <- c(n, n_vac)
 dim(N_imp_non_zero) <- c(n, n_vac, n_strain)
@@ -221,9 +221,9 @@ dim(incidence) <- n_strain
 #dim(p_MISCR) <- (n,n_vac,n_strain)
 
 ## HARD CODED 2 strains
-n_SE_tot[,] <- rbinom(S[i,j] - n_waning[i,j], sum(p_SE[i,j,]))
+n_SE_tot[,] <- rbinom(S[i,j], sum(p_SE[i,j,]))
 rel_strain[,,] <- if(n_strain==1) 1 else (p_SE[i,j,k]/sum(p_SE[i,j,]))
-n_SE[,,] <- if(k==1 || n_strain==1) rbinom(n_SE_tot[i,j],rel_strain[i,j,k]) else
+n_SE[,,] <- if(k==1 || n_strain==1) n_SE_tot[i,j] else
            (if (n_strain==2) n_SE_tot[i,j] - n_SE[i,j,1] else (
                 if(k==2) rbinom(n_SE_tot[i,j] - n_SE[i,j,1], rel_strain[i,j,2]/(rel_strain[i,j,2] + rel_strain[i,j,3])) else(
                                                                                 if (k==3) n_SE_tot[i,j] - n_SE[i,j,2] - n_SE[i,j,1]
@@ -251,14 +251,13 @@ dim(n_SE_tot) <- c(n,n_vac)
 dim(rel_strain) <- c(n,n_vac,n_strain)
 
 # For waning_type=2
-n_waning_tmp[,] <- rbinom(S[i,j], p_waning[i,j]) 
+n_waning_tmp[,] <- rbinom(S[i,j] - sum(n_SE[i,j,  ]) , p_waning[i,j]) 
 dim(n_waning_tmp) <- c(n,n_vac)
 dim(n_waning) <- c(n,n_vac)
 
 n_waning[,] <- if(include_waning==1) if(j != n_vac) rbinom(S[i,j], p_waning[i,j]) else(-sum(n_waning[i, 1:(j-1)])) else ( 
-   if(include_waning==2) if(vac_struct_length==0) if(j != n_vac) n_waning_tmp[i,j] - n_waning_tmp[i, j+1] else (n_waning_tmp[i,j]) else(
-    if(j %% vac_struct_length != 0) n_waning_tmp[i,j] - n_waning_tmp[i, j+1] else (n_waning_tmp[i,j])
-    )else 0)
+   if(include_waning==2) if(j==1) - n_waning_tmp[i, j+1] else( if(j != n_vac) n_waning_tmp[i,j] - n_waning_tmp[i, j+1] else (n_waning_tmp[i,j]))
+  else 0)
                                                                                                                     
                                                                                                                      
                                                                                                                    

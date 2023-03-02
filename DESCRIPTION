@@ -1,6 +1,6 @@
 Package: metapop
 Title: Stochastic metapopulation model
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: 
     person(given = "Gunnar",
            family = "Roe",

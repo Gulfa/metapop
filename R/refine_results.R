@@ -165,7 +165,7 @@ refine_results_odin <- function(res, params){
 
   if(params$n_vac >= 2){
     res <- add_per_vac(res, "tot_vac", params, use_strain=FALSE)
-
+ 
   }
   if(!is.null(params$N_regions) & params$N_regions > 1){
     res <- add_per_region(res, "tot_infected", params)
@@ -177,6 +177,9 @@ refine_results_odin <- function(res, params){
     res <- add_per_vac(res, "N", params, use_strain = FALSE)
     res <- add_per_vac(res, "tot_infected", params)
     res <- add_per_vac(res, "tot_hosp", params)
+    res <- add_per_vac(res, "S", params, use_strain=FALSE)
+    res <- add_per_vac(res, "R", params, use_strain=FALSE)
+
   }
   
   if(!is.null(params$reg_prio)){

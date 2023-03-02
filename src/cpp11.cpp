@@ -142,11 +142,10 @@ extern "C" SEXP _metapop_dust_cpu_metapop_set_stochastic_schedule(SEXP ptr, SEXP
   END_CPP11
 }
 // metapop.cpp
-void dust_cpu_metapop_ode_statistics(SEXP ptr);
+SEXP dust_cpu_metapop_ode_statistics(SEXP ptr);
 extern "C" SEXP _metapop_dust_cpu_metapop_ode_statistics(SEXP ptr) {
   BEGIN_CPP11
-    dust_cpu_metapop_ode_statistics(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr));
-    return R_NilValue;
+    return cpp11::as_sexp(dust_cpu_metapop_ode_statistics(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
   END_CPP11
 }
 // metapopfull.cpp
@@ -286,11 +285,10 @@ extern "C" SEXP _metapop_dust_cpu_metapopfull_set_stochastic_schedule(SEXP ptr, 
   END_CPP11
 }
 // metapopfull.cpp
-void dust_cpu_metapopfull_ode_statistics(SEXP ptr);
+SEXP dust_cpu_metapopfull_ode_statistics(SEXP ptr);
 extern "C" SEXP _metapop_dust_cpu_metapopfull_ode_statistics(SEXP ptr) {
   BEGIN_CPP11
-    dust_cpu_metapopfull_ode_statistics(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr));
-    return R_NilValue;
+    return cpp11::as_sexp(dust_cpu_metapopfull_ode_statistics(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
   END_CPP11
 }
 // mod.cpp
@@ -430,11 +428,10 @@ extern "C" SEXP _metapop_dust_cpu_mod_set_stochastic_schedule(SEXP ptr, SEXP tim
   END_CPP11
 }
 // mod.cpp
-void dust_cpu_mod_ode_statistics(SEXP ptr);
+SEXP dust_cpu_mod_ode_statistics(SEXP ptr);
 extern "C" SEXP _metapop_dust_cpu_mod_ode_statistics(SEXP ptr) {
   BEGIN_CPP11
-    dust_cpu_mod_ode_statistics(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr));
-    return R_NilValue;
+    return cpp11::as_sexp(dust_cpu_mod_ode_statistics(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
   END_CPP11
 }
 // model.cpp
@@ -574,11 +571,10 @@ extern "C" SEXP _metapop_dust_cpu_model_set_stochastic_schedule(SEXP ptr, SEXP t
   END_CPP11
 }
 // model.cpp
-void dust_cpu_model_ode_statistics(SEXP ptr);
+SEXP dust_cpu_model_ode_statistics(SEXP ptr);
 extern "C" SEXP _metapop_dust_cpu_model_ode_statistics(SEXP ptr) {
   BEGIN_CPP11
-    dust_cpu_model_ode_statistics(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr));
-    return R_NilValue;
+    return cpp11::as_sexp(dust_cpu_model_ode_statistics(cpp11::as_cpp<cpp11::decay_t<SEXP>>(ptr)));
   END_CPP11
 }
 
