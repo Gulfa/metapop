@@ -111,8 +111,13 @@ beta[,] <- if(beta_mode==1) beta_day[step, i] else
                       ( if(beta_mode==5) beta_cut_peak*rand_beta_factors[i] else 0))))
 
 ## Core equations for transitions between compartments:
+dim(n_vac_help) <- c(n, n_vac)
+n_vac_help[,1] <- rbinom(vax_time_step[i,1], S[i,1]/sum(S[i,]))
+vax_type <- user(1)
+n_vac_help[,2:n_vac] <- rbinom(vax_time_step[i,1] - sum(n_vac_help[i, 1:(j - 1)]), S[i,1]/sum(S[i,]))
 
-n_vac_now[,] <- if (-vax_time_step[i,j] + sum(n_SE[i,j,])  > S[i,j]) - S[i,j] +  sum(n_SE[i,j,])  else round(vax_time_step[i,j]*S[i,1]/N[i,1]) 
+n_vac_now[,] <- if(vax_type==1) if (-vax_time_step[i,j] + sum(n_SE[i,j,])  > S[i,j]) - S[i,j] +  sum(n_SE[i,j,])  else round(vax_time_step[i,j]*S[i,1]/N[i,1]) else(
+  if(j!=n_vac) if(n_vac_help[i,j] > S[i,j]) -S[i,j] else (-n_vac_help[i,j]) else (vax_time_step[i,1]-n_vac_help[i,j]))
 
 N_imp_non_zero[,,] <- if(S[i,j] - sum(n_SE[i,j,]) +  n_vac_now[i,j] - n_waning[i,j] + waning_tmp[i,j] -sum(N_imp[i,j,])<0) 0 else N_imp[i,j,k]
 

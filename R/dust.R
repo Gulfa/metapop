@@ -915,6 +915,7 @@ model <- R6::R6Class(
      tot_vac_adm_ini = list(has_default = TRUE, default_value = 0L, rank = 2, min = -Inf, max = Inf, integer = FALSE),
      tot_vac_ini = list(has_default = TRUE, default_value = 0L, rank = 2, min = -Inf, max = Inf, integer = FALSE),
      vac_struct_length = list(has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE),
+     vax_type = list(has_default = TRUE, default_value = 1L, rank = 0, min = -Inf, max = Inf, integer = FALSE),
      waning_immunity = list(has_default = TRUE, default_value = 10000L, rank = 0, min = -Inf, max = Inf, integer = FALSE)),
     reload_ = NULL
   ),

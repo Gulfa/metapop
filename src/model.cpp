@@ -177,6 +177,7 @@ __host__ __device__ T odin_max(T x, T y) {
 // [[dust::param(tot_vac_adm_ini, has_default = TRUE, default_value = 0L, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(tot_vac_ini, has_default = TRUE, default_value = 0L, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(vac_struct_length, has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(vax_type, has_default = TRUE, default_value = 1L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(waning_immunity, has_default = TRUE, default_value = 10000L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 class model {
 public:
@@ -596,6 +597,9 @@ public:
     int dim_n_SEi_12;
     int dim_n_SEi_2;
     int dim_n_SEi_3;
+    int dim_n_vac_help;
+    int dim_n_vac_help_1;
+    int dim_n_vac_help_2;
     int dim_n_vac_now;
     int dim_n_vac_now_1;
     int dim_n_vac_now_2;
@@ -911,6 +915,7 @@ public:
     std::vector<real_type> transmisibility;
     real_type vac_struct_length;
     std::vector<real_type> vaccinations;
+    real_type vax_type;
     real_type waning_immunity;
     std::vector<real_type> waning_immunity_vax;
     real_type waning_inf;
@@ -951,6 +956,7 @@ public:
     std::vector<real_type> n_SE_tot;
     std::vector<real_type> n_SEa;
     std::vector<real_type> n_SEi;
+    std::vector<real_type> n_vac_help;
     std::vector<real_type> n_vac_now;
     std::vector<real_type> n_waning;
     std::vector<real_type> n_waning_tmp;
@@ -1191,6 +1197,15 @@ public:
         }
       }
     }
+    for (int i = 1; i <= shared->dim_n_vac_help_1; ++i) {
+      int j = 1;
+      internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1], S[shared->dim_S_1 * 0 + i - 1] / (real_type) odin_sum2<real_type>(S, i - 1, i, 0, shared->dim_S_2, shared->dim_S_1));
+    }
+    for (int i = 1; i <= shared->dim_n_vac_help_1; ++i) {
+      for (int j = 2; j <= shared->n_vac; ++j) {
+        internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1] - odin_sum2<real_type>(internal.n_vac_help.data(), i - 1, i, 0, j - 1, shared->dim_n_vac_help_1), S[shared->dim_S_1 * 0 + i - 1] / (real_type) odin_sum2<real_type>(S, i - 1, i, 0, shared->dim_S_2, shared->dim_S_1));
+      }
+    }
     for (int i = 1; i <= shared->dim_A_1; ++i) {
       for (int j = 1; j <= shared->dim_A_2; ++j) {
         for (int k = 1; k <= shared->dim_A_3; ++k) {
@@ -1418,7 +1433,7 @@ public:
     }
     for (int i = 1; i <= shared->dim_n_vac_now_1; ++i) {
       for (int j = 1; j <= shared->dim_n_vac_now_2; ++j) {
-        internal.n_vac_now[i - 1 + shared->dim_n_vac_now_1 * (j - 1)] = (- internal.vax_time_step[shared->dim_vax_time_step_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) > S[shared->dim_S_1 * (j - 1) + i - 1] ? - S[shared->dim_S_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) : dust::math::round(internal.vax_time_step[shared->dim_vax_time_step_1 * (j - 1) + i - 1] * S[shared->dim_S_1 * 0 + i - 1] / (real_type) N[shared->dim_N_1 * 0 + i - 1]));
+        internal.n_vac_now[i - 1 + shared->dim_n_vac_now_1 * (j - 1)] = (shared->vax_type == 1 ? (- internal.vax_time_step[shared->dim_vax_time_step_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) > S[shared->dim_S_1 * (j - 1) + i - 1] ? - S[shared->dim_S_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) : dust::math::round(internal.vax_time_step[shared->dim_vax_time_step_1 * (j - 1) + i - 1] * S[shared->dim_S_1 * 0 + i - 1] / (real_type) N[shared->dim_N_1 * 0 + i - 1])) : ((j != shared->n_vac ? (internal.n_vac_help[shared->dim_n_vac_help_1 * (j - 1) + i - 1] > S[shared->dim_S_1 * (j - 1) + i - 1] ? - S[shared->dim_S_1 * (j - 1) + i - 1] : (- internal.n_vac_help[shared->dim_n_vac_help_1 * (j - 1) + i - 1])) : (internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1] - internal.n_vac_help[shared->dim_n_vac_help_1 * (j - 1) + i - 1]))));
       }
     }
     for (int i = 1; i <= shared->dim_n_waning_tmp_1; ++i) {
@@ -1819,6 +1834,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->threshold_max = static_cast<real_type>(0.20000000000000001);
   shared->threshold_min = static_cast<real_type>(0.050000000000000003);
   shared->vac_struct_length = 0;
+  shared->vax_type = 1;
   shared->waning_immunity = 10000;
   shared->N_steps = user_get_scalar<int>(user, "N_steps", shared->N_steps, NA_INTEGER, NA_INTEGER);
   shared->asympt_infect = user_get_scalar<real_type>(user, "asympt_infect", shared->asympt_infect, NA_REAL, NA_REAL);
@@ -1843,6 +1859,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->time_before_death_hosp = user_get_scalar<real_type>(user, "time_before_death_hosp", shared->time_before_death_hosp, NA_REAL, NA_REAL);
   shared->time_before_death_icu = user_get_scalar<real_type>(user, "time_before_death_icu", shared->time_before_death_icu, NA_REAL, NA_REAL);
   shared->vac_struct_length = user_get_scalar<real_type>(user, "vac_struct_length", shared->vac_struct_length, NA_REAL, NA_REAL);
+  shared->vax_type = user_get_scalar<real_type>(user, "vax_type", shared->vax_type, NA_REAL, NA_REAL);
   shared->waning_immunity = user_get_scalar<real_type>(user, "waning_immunity", shared->waning_immunity, NA_REAL, NA_REAL);
   shared->waning_inf = user_get_scalar<real_type>(user, "waning_inf", shared->waning_inf, NA_REAL, NA_REAL);
   shared->beta_cut_peak_param = user_get_array_fixed<real_type, 1>(user, "beta_cut_peak_param", shared->beta_cut_peak_param, {shared->dim_beta_cut_peak_param}, NA_REAL, NA_REAL);
@@ -2081,6 +2098,8 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_n_SEi_1 = shared->n;
   shared->dim_n_SEi_2 = shared->n_vac;
   shared->dim_n_SEi_3 = shared->n_strain;
+  shared->dim_n_vac_help_1 = shared->n;
+  shared->dim_n_vac_help_2 = shared->n_vac;
   shared->dim_n_vac_now_1 = shared->n;
   shared->dim_n_vac_now_2 = shared->n_vac;
   shared->dim_n_waning_1 = shared->n;
@@ -2361,6 +2380,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_n_SEa_12 = shared->dim_n_SEa_1 * shared->dim_n_SEa_2;
   shared->dim_n_SEi = shared->dim_n_SEi_1 * shared->dim_n_SEi_2 * shared->dim_n_SEi_3;
   shared->dim_n_SEi_12 = shared->dim_n_SEi_1 * shared->dim_n_SEi_2;
+  shared->dim_n_vac_help = shared->dim_n_vac_help_1 * shared->dim_n_vac_help_2;
   shared->dim_n_vac_now = shared->dim_n_vac_now_1 * shared->dim_n_vac_now_2;
   shared->dim_n_waning = shared->dim_n_waning_1 * shared->dim_n_waning_2;
   shared->dim_n_waning_tmp = shared->dim_n_waning_tmp_1 * shared->dim_n_waning_tmp_2;
@@ -2518,6 +2538,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   internal.n_SE_tot = std::vector<real_type>(shared->dim_n_SE_tot);
   internal.n_SEa = std::vector<real_type>(shared->dim_n_SEa);
   internal.n_SEi = std::vector<real_type>(shared->dim_n_SEi);
+  internal.n_vac_help = std::vector<real_type>(shared->dim_n_vac_help);
   internal.n_vac_now = std::vector<real_type>(shared->dim_n_vac_now);
   internal.n_waning = std::vector<real_type>(shared->dim_n_waning);
   internal.n_waning_tmp = std::vector<real_type>(shared->dim_n_waning_tmp);
