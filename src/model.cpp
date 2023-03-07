@@ -699,6 +699,7 @@ public:
     int dim_rel_strain_2;
     int dim_rel_strain_3;
     int dim_spont_behav_change_params;
+    int dim_sum_vac;
     int dim_susceptibility_asymp;
     int dim_susceptibility_asymp_1;
     int dim_susceptibility_asymp_12;
@@ -824,6 +825,8 @@ public:
     real_type initial_log_beta;
     real_type initial_peak_timer;
     real_type initial_peak_trigger;
+    real_type initial_sum_help_vac;
+    std::vector<real_type> initial_sum_vac;
     real_type initial_time;
     real_type initial_tot_N;
     std::vector<real_type> initial_tot_hosp;
@@ -859,6 +862,7 @@ public:
     int offset_variable_S;
     int offset_variable_beta_spont_behaviour;
     int offset_variable_contact_change;
+    int offset_variable_hosp_inc;
     int offset_variable_incidence;
     int offset_variable_tot_hosp;
     int offset_variable_tot_infected;
@@ -969,10 +973,10 @@ public:
     shared(pars.shared), internal(pars.internal) {
   }
   size_t size() {
-    return shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_hosp + shared->dim_tot_infected + shared->dim_tot_resp + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
+    return shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_hosp + shared->dim_tot_infected + shared->dim_tot_resp + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
   }
   std::vector<real_type> initial(size_t step) {
-    std::vector<real_type> state(shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_hosp + shared->dim_tot_infected + shared->dim_tot_resp + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11);
+    std::vector<real_type> state(shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_hosp + shared->dim_tot_infected + shared->dim_tot_resp + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12);
     state[0] = shared->initial_time;
     state[1] = shared->initial_beta_cut_peak;
     state[2] = shared->initial_trigger;
@@ -980,11 +984,13 @@ public:
     state[4] = shared->initial_peak_trigger;
     state[5] = shared->initial_e_int;
     state[6] = shared->initial_peak_timer;
-    state[7] = shared->initial_log_beta;
-    state[8] = shared->initial_beta_thresh;
-    state[9] = shared->initial_tot_N;
-    state[10] = shared->initial_tot_hosp_inc;
-    std::copy(shared->initial_hosp_inc.begin(), shared->initial_hosp_inc.end(), state.begin() + 11);
+    state[7] = shared->initial_sum_help_vac;
+    state[8] = shared->initial_log_beta;
+    state[9] = shared->initial_beta_thresh;
+    state[10] = shared->initial_tot_N;
+    state[11] = shared->initial_tot_hosp_inc;
+    std::copy(shared->initial_sum_vac.begin(), shared->initial_sum_vac.end(), state.begin() + 12);
+    std::copy(shared->initial_hosp_inc.begin(), shared->initial_hosp_inc.end(), state.begin() + shared->offset_variable_hosp_inc);
     std::copy(shared->initial_incidence.begin(), shared->initial_incidence.end(), state.begin() + shared->offset_variable_incidence);
     std::copy(shared->initial_contact_change.begin(), shared->initial_contact_change.end(), state.begin() + shared->offset_variable_contact_change);
     std::copy(shared->initial_beta_spont_behaviour.begin(), shared->initial_beta_spont_behaviour.end(), state.begin() + shared->offset_variable_beta_spont_behaviour);
@@ -1013,8 +1019,8 @@ public:
   }
   void update(size_t step, const real_type * state, rng_state_type& rng_state, real_type * state_next) {
     const real_type trigger = state[2];
-    const real_type beta_thresh = state[8];
-    const real_type log_beta = state[7];
+    const real_type beta_thresh = state[9];
+    const real_type log_beta = state[8];
     const real_type * contact_change = state + shared->offset_variable_contact_change;
     const real_type * beta_spont_behaviour = state + shared->offset_variable_beta_spont_behaviour;
     const real_type beta_cut_peak = state[1];
@@ -1037,7 +1043,7 @@ public:
     const real_type * R = state + shared->offset_variable_R;
     const real_type * D = state + shared->offset_variable_D;
     const real_type * tot_infected = state + shared->offset_variable_tot_infected;
-    const real_type * hosp_inc = state + 11;
+    const real_type * hosp_inc = state + shared->offset_variable_hosp_inc;
     const real_type * incidence = state + shared->offset_variable_incidence;
     const real_type * tot_hosp = state + shared->offset_variable_tot_hosp;
     const real_type * tot_resp = state + shared->offset_variable_tot_resp;
@@ -1047,8 +1053,8 @@ public:
     state_next[6] = (peak_trigger == 0 ? 0 : peak_timer + shared->dt);
     state_next[0] = (step + 1) * shared->dt;
     state_next[1] = (peak_trigger == 1 && peak_timer < shared->beta_cut_peak_param[3] ? shared->beta_cut_peak_param[1] : shared->beta_cut_peak_param[0]);
-    state_next[7] = (fmodr<real_type>(step, (shared->rand_beta_days * shared->steps_per_day)) == 0 ? log_beta + dust::random::normal<real_type>(rng_state, 0, shared->rand_beta_sd) : (log_beta));
-    state_next[10] = odin_sum1<real_type>(hosp_inc, 0, shared->dim_hosp_inc);
+    state_next[8] = (fmodr<real_type>(step, (shared->rand_beta_days * shared->steps_per_day)) == 0 ? log_beta + dust::random::normal<real_type>(rng_state, 0, shared->rand_beta_sd) : (log_beta));
+    state_next[11] = odin_sum1<real_type>(hosp_inc, 0, shared->dim_hosp_inc);
     real_type current_tot_in_hosp = odin_sum3<real_type>(H, 0, shared->dim_H_1, 0, shared->dim_H_2, 0, shared->dim_H_3, shared->dim_H_1, shared->dim_H_12) + odin_sum3<real_type>(ICU_H, 0, shared->dim_ICU_H_1, 0, shared->dim_ICU_H_2, 0, shared->dim_ICU_H_3, shared->dim_ICU_H_1, shared->dim_ICU_H_12) + odin_sum3<real_type>(ICU_R, 0, shared->dim_ICU_R_1, 0, shared->dim_ICU_R_2, 0, shared->dim_ICU_R_3, shared->dim_ICU_R_1, shared->dim_ICU_R_12) + odin_sum3<real_type>(ICU_P, 0, shared->dim_ICU_P_1, 0, shared->dim_ICU_P_2, 0, shared->dim_ICU_P_3, shared->dim_ICU_P_1, shared->dim_ICU_P_12);
     for (int i = 1; i <= shared->dim_N_1; ++i) {
       for (int j = 1; j <= shared->dim_N_2; ++j) {
@@ -1056,7 +1062,7 @@ public:
       }
     }
     state_next[4] = (odin_sum2<real_type>(S, 0, shared->dim_S_1, 0, shared->dim_S_2, shared->dim_S_1) / (real_type) odin_sum1<real_type>(shared->beta_norm.data(), 0, shared->dim_beta_norm) < shared->beta_cut_peak_param[2] ? 1 : 0);
-    state_next[9] = odin_sum2<real_type>(N, 0, shared->dim_N_1, 0, shared->dim_N_2, shared->dim_N_1);
+    state_next[10] = odin_sum2<real_type>(N, 0, shared->dim_N_1, 0, shared->dim_N_2, shared->dim_N_1);
     for (int i = 1; i <= shared->dim_N_imp_1; ++i) {
       for (int j = 1; j <= shared->dim_N_imp_2; ++j) {
         for (int k = 1; k <= shared->dim_N_imp_3; ++k) {
@@ -1203,7 +1209,7 @@ public:
     }
     for (int i = 1; i <= shared->dim_n_vac_help_1; ++i) {
       for (int j = 2; j <= shared->n_vac; ++j) {
-        internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1] - odin_sum2<real_type>(internal.n_vac_help.data(), i - 1, i, 0, j - 1, shared->dim_n_vac_help_1), S[shared->dim_S_1 * 0 + i - 1] / (real_type) odin_sum2<real_type>(S, i - 1, i, 0, shared->dim_S_2, shared->dim_S_1));
+        internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1] - odin_sum2<real_type>(internal.n_vac_help.data(), i - 1, i, 0, j - 1, shared->dim_n_vac_help_1), S[shared->dim_S_1 * (j - 1) + i - 1] / (real_type) odin_sum2<real_type>(S, i - 1, i, j - 1, shared->n_vac, shared->dim_S_1));
       }
     }
     for (int i = 1; i <= shared->dim_A_1; ++i) {
@@ -1292,6 +1298,7 @@ public:
         }
       }
     }
+    state_next[7] = odin_sum2<real_type>(internal.n_vac_help.data(), 0, shared->dim_n_vac_help_1, 0, shared->dim_n_vac_help_2, shared->dim_n_vac_help_1);
     for (int i = 1; i <= shared->dim_tot_resp_1; ++i) {
       for (int j = 1; j <= shared->dim_tot_resp_2; ++j) {
         for (int k = 1; k <= shared->dim_tot_resp_3; ++k) {
@@ -1407,7 +1414,7 @@ public:
       }
     }
     for (int i = 1; i <= shared->dim_hosp_inc; ++i) {
-      state_next[11 + i - 1] = (fmodr<real_type>(step, (shared->incidence_steps_measurement * shared->steps_per_day)) == 0 ? odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12) : hosp_inc[i - 1] + odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12));
+      state_next[shared->offset_variable_hosp_inc + i - 1] = (fmodr<real_type>(step, (shared->incidence_steps_measurement * shared->steps_per_day)) == 0 ? odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12) : hosp_inc[i - 1] + odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12));
     }
     for (int i = 1; i <= shared->dim_tot_hosp_1; ++i) {
       for (int j = 1; j <= shared->dim_tot_hosp_2; ++j) {
@@ -1479,6 +1486,9 @@ public:
         }
       }
     }
+    for (int i = 1; i <= shared->dim_sum_vac; ++i) {
+      state_next[12 + i - 1] = odin_sum2<real_type>(internal.n_vac_now.data(), 0, shared->dim_n_vac_now_1, i - 1, i, shared->dim_n_vac_now_1);
+    }
     for (int i = 1; i <= shared->dim_tot_vac_1; ++i) {
       for (int j = 1; j <= shared->dim_tot_vac_2; ++j) {
         state_next[shared->offset_variable_tot_vac + i - 1 + shared->dim_tot_vac_1 * (j - 1)] = tot_vac[shared->dim_tot_vac_1 * (j - 1) + i - 1] + internal.n_vac_now[shared->dim_n_vac_now_1 * (j - 1) + i - 1];
@@ -1498,7 +1508,7 @@ public:
         }
       }
     }
-    state_next[8] = (new_beta_thresh > shared->threshold_max ? shared->threshold_max : ((new_beta_thresh < shared->threshold_min ? shared->threshold_min : new_beta_thresh)));
+    state_next[9] = (new_beta_thresh > shared->threshold_max ? shared->threshold_max : ((new_beta_thresh < shared->threshold_min ? shared->threshold_min : new_beta_thresh)));
     for (int i = 1; i <= shared->dim_I_1; ++i) {
       for (int j = 1; j <= shared->dim_I_2; ++j) {
         for (int k = 1; k <= shared->dim_I_3; ++k) {
@@ -1806,6 +1816,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->initial_incidence_int = 0;
   shared->initial_peak_timer = 0;
   shared->initial_peak_trigger = 0;
+  shared->initial_sum_help_vac = 0;
   shared->initial_time = 1;
   shared->initial_tot_N = 0;
   shared->initial_tot_hosp_inc = 0;
@@ -2160,6 +2171,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_rel_strain_1 = shared->n;
   shared->dim_rel_strain_2 = shared->n_vac;
   shared->dim_rel_strain_3 = shared->n_strain;
+  shared->dim_sum_vac = shared->n_vac;
   shared->dim_susceptibility_asymp_1 = shared->n;
   shared->dim_susceptibility_asymp_2 = shared->n_vac;
   shared->dim_susceptibility_asymp_3 = shared->n_strain;
@@ -2229,6 +2241,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->index = std::vector<real_type>(shared->dim_index);
   shared->initial_hosp_inc = std::vector<real_type>(shared->dim_hosp_inc);
   shared->initial_incidence = std::vector<real_type>(shared->dim_incidence);
+  shared->initial_sum_vac = std::vector<real_type>(shared->dim_sum_vac);
   shared->beta_norm = user_get_array_fixed<real_type, 1>(user, "beta_norm", shared->beta_norm, {shared->dim_beta_norm}, NA_REAL, NA_REAL);
   shared->beta_strain = user_get_array_fixed<real_type, 1>(user, "beta_strain", shared->beta_strain, {shared->dim_beta_strain}, NA_REAL, NA_REAL);
   shared->dim_A = shared->dim_A_1 * shared->dim_A_2 * shared->dim_A_3;
@@ -2460,8 +2473,12 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   for (int i = 1; i <= shared->dim_incidence; ++i) {
     shared->initial_incidence[i - 1] = 0;
   }
-  shared->offset_variable_contact_change = shared->dim_hosp_inc + shared->dim_incidence + 11;
-  shared->offset_variable_incidence = shared->dim_hosp_inc + 11;
+  for (int i = 1; i <= shared->dim_sum_vac; ++i) {
+    shared->initial_sum_vac[i - 1] = 0;
+  }
+  shared->offset_variable_contact_change = shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + 12;
+  shared->offset_variable_hosp_inc = shared->dim_sum_vac + 12;
+  shared->offset_variable_incidence = shared->dim_hosp_inc + shared->dim_sum_vac + 12;
   shared->rand_beta_factors = user_get_array_fixed<real_type, 1>(user, "rand_beta_factors", shared->rand_beta_factors, {shared->dim_rand_beta_factors}, NA_REAL, NA_REAL);
   shared->A_ini = user_get_array_fixed<real_type, 3>(user, "A_ini", shared->A_ini, {shared->dim_A_ini_1, shared->dim_A_ini_2, shared->dim_A_ini_3}, NA_REAL, NA_REAL);
   shared->B_D_H_ini = user_get_array_fixed<real_type, 3>(user, "B_D_H_ini", shared->B_D_H_ini, {shared->dim_B_D_H_ini_1, shared->dim_B_D_H_ini_2, shared->dim_B_D_H_ini_3}, NA_REAL, NA_REAL);
@@ -2576,28 +2593,28 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->length_hosp = user_get_array_fixed<real_type, 3>(user, "length_hosp", shared->length_hosp, {shared->dim_length_hosp_1, shared->dim_length_hosp_2, shared->dim_length_hosp_3}, NA_REAL, NA_REAL);
   shared->length_icu = user_get_array_fixed<real_type, 3>(user, "length_icu", shared->length_icu, {shared->dim_length_icu_1, shared->dim_length_icu_2, shared->dim_length_icu_3}, NA_REAL, NA_REAL);
   shared->mixing_matrix = user_get_array_fixed<real_type, 2>(user, "mixing_matrix", shared->mixing_matrix, {shared->dim_mixing_matrix_1, shared->dim_mixing_matrix_2}, NA_REAL, NA_REAL);
-  shared->offset_variable_A = shared->dim_Ea + shared->dim_Es + shared->dim_I + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_B_D = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_B_D_H = shared->dim_A + shared->dim_B_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_B_D_ICU = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_D = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_Ea = shared->dim_N + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_Es = shared->dim_Ea + shared->dim_N + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_H = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_I + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_I = shared->dim_Ea + shared->dim_Es + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_ICU_H = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_ICU_P = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_ICU_R = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_N = shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + 11;
-  shared->offset_variable_P = shared->dim_Ea + shared->dim_Es + shared->dim_N + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_R = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_S = shared->dim_N + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + 11;
-  shared->offset_variable_beta_spont_behaviour = shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + 11;
-  shared->offset_variable_tot_hosp = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_infected + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_tot_infected = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_tot_resp = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_hosp + shared->dim_tot_infected + shared->dim_tot_vac + shared->dim_tot_vac_adm + 11;
-  shared->offset_variable_tot_vac = shared->dim_N + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + 11;
-  shared->offset_variable_tot_vac_adm = shared->dim_N + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_tot_vac + 11;
+  shared->offset_variable_A = shared->dim_Ea + shared->dim_Es + shared->dim_I + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_B_D = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_B_D_H = shared->dim_A + shared->dim_B_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_B_D_ICU = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_D = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_Ea = shared->dim_N + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_Es = shared->dim_Ea + shared->dim_N + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_H = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_I + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_I = shared->dim_Ea + shared->dim_Es + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_ICU_H = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_ICU_P = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_ICU_R = shared->dim_A + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_N = shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + 12;
+  shared->offset_variable_P = shared->dim_Ea + shared->dim_Es + shared->dim_N + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_R = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_S = shared->dim_N + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + 12;
+  shared->offset_variable_beta_spont_behaviour = shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + 12;
+  shared->offset_variable_tot_hosp = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_infected + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_tot_infected = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_tot_resp = shared->dim_A + shared->dim_B_D + shared->dim_B_D_H + shared->dim_B_D_ICU + shared->dim_D + shared->dim_Ea + shared->dim_Es + shared->dim_H + shared->dim_I + shared->dim_ICU_H + shared->dim_ICU_P + shared->dim_ICU_R + shared->dim_N + shared->dim_P + shared->dim_R + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_hosp + shared->dim_tot_infected + shared->dim_tot_vac + shared->dim_tot_vac_adm + 12;
+  shared->offset_variable_tot_vac = shared->dim_N + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + 12;
+  shared->offset_variable_tot_vac_adm = shared->dim_N + shared->dim_S + shared->dim_beta_spont_behaviour + shared->dim_contact_change + shared->dim_hosp_inc + shared->dim_incidence + shared->dim_sum_vac + shared->dim_tot_vac + 12;
   shared->post_icu = user_get_array_fixed<real_type, 3>(user, "post_icu", shared->post_icu, {shared->dim_post_icu_1, shared->dim_post_icu_2, shared->dim_post_icu_3}, NA_REAL, NA_REAL);
   shared->pre_icu = user_get_array_fixed<real_type, 3>(user, "pre_icu", shared->pre_icu, {shared->dim_pre_icu_1, shared->dim_pre_icu_2, shared->dim_pre_icu_3}, NA_REAL, NA_REAL);
   shared->prob_death_hosp = user_get_array_fixed<real_type, 3>(user, "prob_death_hosp", shared->prob_death_hosp, {shared->dim_prob_death_hosp_1, shared->dim_prob_death_hosp_2, shared->dim_prob_death_hosp_3}, NA_REAL, NA_REAL);
@@ -2846,8 +2863,8 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
 template <>
 cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   const std::shared_ptr<const model::shared_type> shared = pars.shared;
-  cpp11::writable::strings nms({"time", "beta_cut_peak", "trigger", "incidence_int", "peak_trigger", "e_int", "peak_timer", "log_beta", "beta_thresh", "tot_N", "tot_hosp_inc", "hosp_inc", "incidence", "contact_change", "beta_spont_behaviour", "N", "S", "tot_vac", "tot_vac_adm", "Ea", "Es", "P", "I", "A", "H", "ICU_H", "ICU_R", "ICU_P", "B_D", "B_D_H", "B_D_ICU", "R", "D", "tot_infected", "tot_hosp", "tot_resp"});
-  cpp11::writable::list dim(36);
+  cpp11::writable::strings nms({"time", "beta_cut_peak", "trigger", "incidence_int", "peak_trigger", "e_int", "peak_timer", "sum_help_vac", "log_beta", "beta_thresh", "tot_N", "tot_hosp_inc", "sum_vac", "hosp_inc", "incidence", "contact_change", "beta_spont_behaviour", "N", "S", "tot_vac", "tot_vac_adm", "Ea", "Es", "P", "I", "A", "H", "ICU_H", "ICU_R", "ICU_P", "B_D", "B_D_H", "B_D_ICU", "R", "D", "tot_infected", "tot_hosp", "tot_resp"});
+  cpp11::writable::list dim(38);
   dim[0] = cpp11::writable::integers({1});
   dim[1] = cpp11::writable::integers({1});
   dim[2] = cpp11::writable::integers({1});
@@ -2859,33 +2876,35 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   dim[8] = cpp11::writable::integers({1});
   dim[9] = cpp11::writable::integers({1});
   dim[10] = cpp11::writable::integers({1});
-  dim[11] = cpp11::writable::integers({shared->dim_hosp_inc});
-  dim[12] = cpp11::writable::integers({shared->dim_incidence});
-  dim[13] = cpp11::writable::integers({shared->dim_contact_change_1, shared->dim_contact_change_2});
-  dim[14] = cpp11::writable::integers({shared->dim_beta_spont_behaviour_1, shared->dim_beta_spont_behaviour_2});
-  dim[15] = cpp11::writable::integers({shared->dim_N_1, shared->dim_N_2});
-  dim[16] = cpp11::writable::integers({shared->dim_S_1, shared->dim_S_2});
-  dim[17] = cpp11::writable::integers({shared->dim_tot_vac_1, shared->dim_tot_vac_2});
-  dim[18] = cpp11::writable::integers({shared->dim_tot_vac_adm_1, shared->dim_tot_vac_adm_2});
-  dim[19] = cpp11::writable::integers({shared->dim_Ea_1, shared->dim_Ea_2, shared->dim_Ea_3});
-  dim[20] = cpp11::writable::integers({shared->dim_Es_1, shared->dim_Es_2, shared->dim_Es_3});
-  dim[21] = cpp11::writable::integers({shared->dim_P_1, shared->dim_P_2, shared->dim_P_3});
-  dim[22] = cpp11::writable::integers({shared->dim_I_1, shared->dim_I_2, shared->dim_I_3});
-  dim[23] = cpp11::writable::integers({shared->dim_A_1, shared->dim_A_2, shared->dim_A_3});
-  dim[24] = cpp11::writable::integers({shared->dim_H_1, shared->dim_H_2, shared->dim_H_3});
-  dim[25] = cpp11::writable::integers({shared->dim_ICU_H_1, shared->dim_ICU_H_2, shared->dim_ICU_H_3});
-  dim[26] = cpp11::writable::integers({shared->dim_ICU_R_1, shared->dim_ICU_R_2, shared->dim_ICU_R_3});
-  dim[27] = cpp11::writable::integers({shared->dim_ICU_P_1, shared->dim_ICU_P_2, shared->dim_ICU_P_3});
-  dim[28] = cpp11::writable::integers({shared->dim_B_D_1, shared->dim_B_D_2, shared->dim_B_D_3});
-  dim[29] = cpp11::writable::integers({shared->dim_B_D_H_1, shared->dim_B_D_H_2, shared->dim_B_D_H_3});
-  dim[30] = cpp11::writable::integers({shared->dim_B_D_ICU_1, shared->dim_B_D_ICU_2, shared->dim_B_D_ICU_3});
-  dim[31] = cpp11::writable::integers({shared->dim_R_1, shared->dim_R_2, shared->dim_R_3});
-  dim[32] = cpp11::writable::integers({shared->dim_D_1, shared->dim_D_2, shared->dim_D_3});
-  dim[33] = cpp11::writable::integers({shared->dim_tot_infected_1, shared->dim_tot_infected_2, shared->dim_tot_infected_3});
-  dim[34] = cpp11::writable::integers({shared->dim_tot_hosp_1, shared->dim_tot_hosp_2, shared->dim_tot_hosp_3});
-  dim[35] = cpp11::writable::integers({shared->dim_tot_resp_1, shared->dim_tot_resp_2, shared->dim_tot_resp_3});
+  dim[11] = cpp11::writable::integers({1});
+  dim[12] = cpp11::writable::integers({shared->dim_sum_vac});
+  dim[13] = cpp11::writable::integers({shared->dim_hosp_inc});
+  dim[14] = cpp11::writable::integers({shared->dim_incidence});
+  dim[15] = cpp11::writable::integers({shared->dim_contact_change_1, shared->dim_contact_change_2});
+  dim[16] = cpp11::writable::integers({shared->dim_beta_spont_behaviour_1, shared->dim_beta_spont_behaviour_2});
+  dim[17] = cpp11::writable::integers({shared->dim_N_1, shared->dim_N_2});
+  dim[18] = cpp11::writable::integers({shared->dim_S_1, shared->dim_S_2});
+  dim[19] = cpp11::writable::integers({shared->dim_tot_vac_1, shared->dim_tot_vac_2});
+  dim[20] = cpp11::writable::integers({shared->dim_tot_vac_adm_1, shared->dim_tot_vac_adm_2});
+  dim[21] = cpp11::writable::integers({shared->dim_Ea_1, shared->dim_Ea_2, shared->dim_Ea_3});
+  dim[22] = cpp11::writable::integers({shared->dim_Es_1, shared->dim_Es_2, shared->dim_Es_3});
+  dim[23] = cpp11::writable::integers({shared->dim_P_1, shared->dim_P_2, shared->dim_P_3});
+  dim[24] = cpp11::writable::integers({shared->dim_I_1, shared->dim_I_2, shared->dim_I_3});
+  dim[25] = cpp11::writable::integers({shared->dim_A_1, shared->dim_A_2, shared->dim_A_3});
+  dim[26] = cpp11::writable::integers({shared->dim_H_1, shared->dim_H_2, shared->dim_H_3});
+  dim[27] = cpp11::writable::integers({shared->dim_ICU_H_1, shared->dim_ICU_H_2, shared->dim_ICU_H_3});
+  dim[28] = cpp11::writable::integers({shared->dim_ICU_R_1, shared->dim_ICU_R_2, shared->dim_ICU_R_3});
+  dim[29] = cpp11::writable::integers({shared->dim_ICU_P_1, shared->dim_ICU_P_2, shared->dim_ICU_P_3});
+  dim[30] = cpp11::writable::integers({shared->dim_B_D_1, shared->dim_B_D_2, shared->dim_B_D_3});
+  dim[31] = cpp11::writable::integers({shared->dim_B_D_H_1, shared->dim_B_D_H_2, shared->dim_B_D_H_3});
+  dim[32] = cpp11::writable::integers({shared->dim_B_D_ICU_1, shared->dim_B_D_ICU_2, shared->dim_B_D_ICU_3});
+  dim[33] = cpp11::writable::integers({shared->dim_R_1, shared->dim_R_2, shared->dim_R_3});
+  dim[34] = cpp11::writable::integers({shared->dim_D_1, shared->dim_D_2, shared->dim_D_3});
+  dim[35] = cpp11::writable::integers({shared->dim_tot_infected_1, shared->dim_tot_infected_2, shared->dim_tot_infected_3});
+  dim[36] = cpp11::writable::integers({shared->dim_tot_hosp_1, shared->dim_tot_hosp_2, shared->dim_tot_hosp_3});
+  dim[37] = cpp11::writable::integers({shared->dim_tot_resp_1, shared->dim_tot_resp_2, shared->dim_tot_resp_3});
   dim.names() = nms;
-  cpp11::writable::list index(36);
+  cpp11::writable::list index(38);
   index[0] = cpp11::writable::integers({1});
   index[1] = cpp11::writable::integers({2});
   index[2] = cpp11::writable::integers({3});
@@ -2897,31 +2916,33 @@ cpp11::sexp dust_info<model>(const dust::pars_type<model>& pars) {
   index[8] = cpp11::writable::integers({9});
   index[9] = cpp11::writable::integers({10});
   index[10] = cpp11::writable::integers({11});
-  index[11] = integer_sequence(12, shared->dim_hosp_inc);
-  index[12] = integer_sequence(shared->offset_variable_incidence + 1, shared->dim_incidence);
-  index[13] = integer_sequence(shared->offset_variable_contact_change + 1, shared->dim_contact_change);
-  index[14] = integer_sequence(shared->offset_variable_beta_spont_behaviour + 1, shared->dim_beta_spont_behaviour);
-  index[15] = integer_sequence(shared->offset_variable_N + 1, shared->dim_N);
-  index[16] = integer_sequence(shared->offset_variable_S + 1, shared->dim_S);
-  index[17] = integer_sequence(shared->offset_variable_tot_vac + 1, shared->dim_tot_vac);
-  index[18] = integer_sequence(shared->offset_variable_tot_vac_adm + 1, shared->dim_tot_vac_adm);
-  index[19] = integer_sequence(shared->offset_variable_Ea + 1, shared->dim_Ea);
-  index[20] = integer_sequence(shared->offset_variable_Es + 1, shared->dim_Es);
-  index[21] = integer_sequence(shared->offset_variable_P + 1, shared->dim_P);
-  index[22] = integer_sequence(shared->offset_variable_I + 1, shared->dim_I);
-  index[23] = integer_sequence(shared->offset_variable_A + 1, shared->dim_A);
-  index[24] = integer_sequence(shared->offset_variable_H + 1, shared->dim_H);
-  index[25] = integer_sequence(shared->offset_variable_ICU_H + 1, shared->dim_ICU_H);
-  index[26] = integer_sequence(shared->offset_variable_ICU_R + 1, shared->dim_ICU_R);
-  index[27] = integer_sequence(shared->offset_variable_ICU_P + 1, shared->dim_ICU_P);
-  index[28] = integer_sequence(shared->offset_variable_B_D + 1, shared->dim_B_D);
-  index[29] = integer_sequence(shared->offset_variable_B_D_H + 1, shared->dim_B_D_H);
-  index[30] = integer_sequence(shared->offset_variable_B_D_ICU + 1, shared->dim_B_D_ICU);
-  index[31] = integer_sequence(shared->offset_variable_R + 1, shared->dim_R);
-  index[32] = integer_sequence(shared->offset_variable_D + 1, shared->dim_D);
-  index[33] = integer_sequence(shared->offset_variable_tot_infected + 1, shared->dim_tot_infected);
-  index[34] = integer_sequence(shared->offset_variable_tot_hosp + 1, shared->dim_tot_hosp);
-  index[35] = integer_sequence(shared->offset_variable_tot_resp + 1, shared->dim_tot_resp);
+  index[11] = cpp11::writable::integers({12});
+  index[12] = integer_sequence(13, shared->dim_sum_vac);
+  index[13] = integer_sequence(shared->offset_variable_hosp_inc + 1, shared->dim_hosp_inc);
+  index[14] = integer_sequence(shared->offset_variable_incidence + 1, shared->dim_incidence);
+  index[15] = integer_sequence(shared->offset_variable_contact_change + 1, shared->dim_contact_change);
+  index[16] = integer_sequence(shared->offset_variable_beta_spont_behaviour + 1, shared->dim_beta_spont_behaviour);
+  index[17] = integer_sequence(shared->offset_variable_N + 1, shared->dim_N);
+  index[18] = integer_sequence(shared->offset_variable_S + 1, shared->dim_S);
+  index[19] = integer_sequence(shared->offset_variable_tot_vac + 1, shared->dim_tot_vac);
+  index[20] = integer_sequence(shared->offset_variable_tot_vac_adm + 1, shared->dim_tot_vac_adm);
+  index[21] = integer_sequence(shared->offset_variable_Ea + 1, shared->dim_Ea);
+  index[22] = integer_sequence(shared->offset_variable_Es + 1, shared->dim_Es);
+  index[23] = integer_sequence(shared->offset_variable_P + 1, shared->dim_P);
+  index[24] = integer_sequence(shared->offset_variable_I + 1, shared->dim_I);
+  index[25] = integer_sequence(shared->offset_variable_A + 1, shared->dim_A);
+  index[26] = integer_sequence(shared->offset_variable_H + 1, shared->dim_H);
+  index[27] = integer_sequence(shared->offset_variable_ICU_H + 1, shared->dim_ICU_H);
+  index[28] = integer_sequence(shared->offset_variable_ICU_R + 1, shared->dim_ICU_R);
+  index[29] = integer_sequence(shared->offset_variable_ICU_P + 1, shared->dim_ICU_P);
+  index[30] = integer_sequence(shared->offset_variable_B_D + 1, shared->dim_B_D);
+  index[31] = integer_sequence(shared->offset_variable_B_D_H + 1, shared->dim_B_D_H);
+  index[32] = integer_sequence(shared->offset_variable_B_D_ICU + 1, shared->dim_B_D_ICU);
+  index[33] = integer_sequence(shared->offset_variable_R + 1, shared->dim_R);
+  index[34] = integer_sequence(shared->offset_variable_D + 1, shared->dim_D);
+  index[35] = integer_sequence(shared->offset_variable_tot_infected + 1, shared->dim_tot_infected);
+  index[36] = integer_sequence(shared->offset_variable_tot_hosp + 1, shared->dim_tot_hosp);
+  index[37] = integer_sequence(shared->offset_variable_tot_resp + 1, shared->dim_tot_resp);
   index.names() = nms;
   size_t len = shared->offset_variable_tot_resp + shared->dim_tot_resp;
   using namespace cpp11::literals;

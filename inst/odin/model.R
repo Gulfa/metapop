@@ -114,11 +114,15 @@ beta[,] <- if(beta_mode==1) beta_day[step, i] else
 dim(n_vac_help) <- c(n, n_vac)
 n_vac_help[,1] <- rbinom(vax_time_step[i,1], S[i,1]/sum(S[i,]))
 vax_type <- user(1)
-n_vac_help[,2:n_vac] <- rbinom(vax_time_step[i,1] - sum(n_vac_help[i, 1:(j - 1)]), S[i,1]/sum(S[i,]))
+n_vac_help[,2:n_vac] <- rbinom(vax_time_step[i,1] - sum(n_vac_help[i, 1:(j - 1)]), S[i,j]/sum(S[i,j:n_vac]))
 
 n_vac_now[,] <- if(vax_type==1) if (-vax_time_step[i,j] + sum(n_SE[i,j,])  > S[i,j]) - S[i,j] +  sum(n_SE[i,j,])  else round(vax_time_step[i,j]*S[i,1]/N[i,1]) else(
   if(j!=n_vac) if(n_vac_help[i,j] > S[i,j]) -S[i,j] else (-n_vac_help[i,j]) else (vax_time_step[i,1]-n_vac_help[i,j]))
-
+initial(sum_vac[]) <-0
+dim(sum_vac) <- n_vac
+update(sum_vac[]) <- sum(n_vac_now[,i])
+initial(sum_help_vac) <-0
+update(sum_help_vac) <- sum(n_vac_help[,])
 N_imp_non_zero[,,] <- if(S[i,j] - sum(n_SE[i,j,]) +  n_vac_now[i,j] - n_waning[i,j] + waning_tmp[i,j] -sum(N_imp[i,j,])<0) 0 else N_imp[i,j,k]
 
 dim(n_vac_now) <- c(n, n_vac)
