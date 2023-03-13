@@ -3,8 +3,7 @@
 #'
 #' @export
 fix_params <- function(params, N, n_vac, n_strain, vac_pars){
-  print("hei")
-  params$asympt_frac <- array(params$asympt_frac, dim=c(N, n_vac, n_strain))
+   params$asympt_frac <- array(params$asympt_frac, dim=c(N, n_vac, n_strain))
   params$sympt_frac <- array(params$sympt_frac, dim=c(N, n_vac, n_strain))
   params$length_hosp <- array(outer(params$length_hosp, vac_pars$rr_los_hosp), dim=c(N, n_vac, n_strain))
   params$length_icu <- array(params$length_icu, dim=c(N, n_vac, n_strain))
