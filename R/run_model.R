@@ -9,7 +9,7 @@ NULL
 #' The number of particles gives the number of samples and threads the number of cores used to sample
 #' @export
 run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1", run_params=list(), silent=TRUE, estimate_Rt=FALSE,Rt_per_day=1,
-                       return_summary_function=NULL, deterministic=FALSE){
+                       return_summary_function=NULL, deterministic=FALSE, thin_before_refine=NULL){
   params <- fix_beta_mode_params(params)
   if(!silent){
     print(glue::glue("Running {run_name}"))
@@ -35,6 +35,11 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
     return(return_summary_function(raw_results, params) %>% mutate(name=run_name))
   }
   
+  if(!is.null(thin_before_refine)){
+    mask <- raw_results[params$dust_index$time, 1,] %% thin_before_refine == 0
+    raw_results <- raw_results[,,mask, drop=FALSE]
+  }
+
   results <- refine_results_odin_dust(raw_results, params, N_threads)
   if(!silent){
     print(glue::glue("Finished refine results {run_name}"))
@@ -70,6 +75,7 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
     results <- results %>% dplyr::mutate(Rt=rep(unlist(Rts)))
   }
   results <- results  %>% dplyr::mutate(name=run_name) %>% dplyr::mutate(!!!run_params)
+
   return(results)
 }
 
