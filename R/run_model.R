@@ -34,7 +34,7 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
     }
   }else{
   
-
+    params[["unused_user_action"]] <- FALSE
     odin_model <- do.call(metapopdeterministic::model_deterministic$new,params)
     raw_results <- odin_model$run(1:L)
     
