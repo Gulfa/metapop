@@ -1308,7 +1308,7 @@ public:
     }
     for (int i = 1; i <= shared->dim_kernel_1; ++i) {
       for (int j = 1; j <= shared->dim_kernel_2; ++j) {
-        internal.kernel[i - 1 + shared->dim_kernel_1 * (j - 1)] = shared->spont_behav_change_params[3] * ((1 - dust::math::pow((1 - odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12)), shared->spont_behav_change_params[1])) * shared->expected_health_loss[shared->dim_expected_health_loss_1 * (j - 1) + i - 1] - shared->spont_behav_change_params[1] * shared->spont_behav_change_params[2]);
+        internal.kernel[i - 1 + shared->dim_kernel_1 * (j - 1)] = shared->spont_behav_change_params[3] * ((1 - dust::math::pow((1 - odin_sum3<real_type>(internal.p_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_p_SE_3, shared->dim_p_SE_1, shared->dim_p_SE_12)), (shared->spont_behav_change_params[1] / (real_type) shared->dt))) * shared->expected_health_loss[shared->dim_expected_health_loss_1 * (j - 1) + i - 1] - shared->spont_behav_change_params[1] * shared->spont_behav_change_params[2]);
       }
     }
     for (int i = 1; i <= shared->dim_n_HR_1; ++i) {

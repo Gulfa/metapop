@@ -66,7 +66,7 @@ expected_health_loss[,] <- user(0)
 dim(contact_change) <- c(n, n_vac)
 initial(contact_change[,]) <- 0
 
-kernel[,] <- spont_behav_change_params[4]*( (1-(1- sum(p_SE[i,j,]))^spont_behav_change_params[2]) * expected_health_loss[i,j] - spont_behav_change_params[2] *spont_behav_change_params[3])
+kernel[,] <- spont_behav_change_params[4]*( (1-(1- sum(p_SE[i,j,]))^(spont_behav_change_params[2]/dt)) * expected_health_loss[i,j] - spont_behav_change_params[2] *spont_behav_change_params[3])
 dim(kernel) <- c(n, n_vac)
 
 update(contact_change[,]) <- if(kernel[i,j] > 15) 1 else (exp(kernel[i,j])/(1 + exp(kernel[i,j])))

@@ -3,42 +3,54 @@
 #' @export model
 NULL
 
+
 #' run_params
 #'
 #' Run the metapopulation model with a set of parameters and a given number of particles and threads.
 #' The number of particles gives the number of samples and threads the number of cores used to sample
 #' @export
 run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1", run_params=list(), silent=TRUE, estimate_Rt=FALSE,Rt_per_day=1,
-                       return_summary_function=NULL, deterministic=FALSE, thin_before_refine=NULL){
+                       return_summary_function=NULL, deterministic=FALSE, thin_before_refine=NULL, use_determinsitic_model=FALSE){
   params <- fix_beta_mode_params(params)
+  params <- fix_init_params(params)
+  params$use_determinsitic_model <- use_determinsitic_model
   if(!silent){
     print(glue::glue("Running {run_name}"))
+
   }
-
-  params <- fix_init_params(params)
   dust_model <- model$new(pars = params,
-                         time=1,
-                         n_particles = N_particles,
-                         n_threads = N_threads,
+                          time=1,
+                          n_particles = N_particles,
+                          n_threads = N_threads,
                          deterministic=deterministic
-                         )
-
+              )
+ 
+   if(!use_determinsitic_model){
+    params$dust_index <- dust_model$info()$index
+    raw_results <- dust_model$simulate(1:(L/params$dt))
+    if(!is.null(thin_before_refine)){
+      mask <- raw_results[params$dust_index$time, 1,] %% thin_before_refine == 0
+      raw_results <- raw_results[,,mask, drop=FALSE]
+    }
+  }else{
   
-  raw_results <- dust_model$simulate(1:(L/params$dt))
+
+    odin_model <- do.call(metapopdeterministic::model_deterministic$new,params)
+    raw_results <- odin_model$run(1:L)
+    
+  }
+  
   if(!silent){
     print(glue::glue("Finished raw run {run_name}"))
   }
 
-  params$dust_index <- dust_model$info()$index
+ 
 
   if(!is.null(return_summary_function)){
     return(return_summary_function(raw_results, params) %>% mutate(name=run_name))
   }
   
-  if(!is.null(thin_before_refine)){
-    mask <- raw_results[params$dust_index$time, 1,] %% thin_before_refine == 0
-    raw_results <- raw_results[,,mask, drop=FALSE]
-  }
+
 
   results <- refine_results_odin_dust(raw_results, params, N_threads)
   if(!silent){

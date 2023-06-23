@@ -154,6 +154,9 @@ refine_results_odin <- function(res, params){
  # non_vac_list <- 1:(N_reg*N_age)
   age_list <- seq(1, params$n*params$n_vac*params$n_strain,by=params$n)
 
+  if(!"time" %in% colnames(res)){
+    res <- cbind(res, "time"=res[, "t"])
+  }
   res <- add_per_age(res, "tot_infected", params)
   res <- add_per_age(res, "tot_resp", params)
   res <- add_per_age(res, "tot_hosp", params)
@@ -231,12 +234,16 @@ refine_results_odin <- function(res, params){
 refine_results_odin_dust <- function(res, params, N_threads){
 
                                         #  refined <- lapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params, n, N_reg, N_age, N_wax))
-  refined <- parallel::mclapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params,n),
-                                mc.cores=N_threads)
+  if(params$use_determinsitic_model){
+    refined <- refine_one_sim(res, params, 1)
+  }else{
+  refined <- data.table::rbindlist(parallel::mclapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params,n),
+                                mc.cores=N_threads))
+  }
 ##  refined <- lapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params,n))
 
   
-  return(data.table::rbindlist(refined))
+  return(refined)
 }
 
 
@@ -275,9 +282,33 @@ to_results_dt <- function(res, model, filter_dt=FALSE){
   return(results)
 }
 
+fix_index_determinsitic <- function(raw_results){
+    tmp <- unlist(lapply(stringr::str_split(colnames(raw_results), "\\["), function(x) x[[1]]))
+    freq_count <- table(tmp)
+    new_names <- c()
+    used_base_names <- list()
+    for(t in tmp){
+      if(freq_count[t] > 1){
+        count <- sum(used_base_names==t) + 1
+       
+        new_t <- paste(t, "[", count, "]", sep="")
+      }else{
+        new_t <- t
+      }
+      used_base_names[[length(used_base_names) + 1]] <- t
+      new_names[[length(new_names) + 1]] <- new_t
+    }
+  return(unlist(new_names))
+}
+
 refine_one_sim <- function(res, params,n){
-  res <- t(res[1:dim(res)[1],])
-  colnames(res) <- fix_index(params$dust_index)
+  if(!is.null(params$dust_index)){
+    res <- t(res[1:dim(res)[1],])
+    colnames(res) <- fix_index(params$dust_index)
+  }else{
+    colnames(res) <- fix_index_determinsitic(res)
+
+  }
   dt <- refine_results_odin(res,params)
   return(dt%>% dplyr::mutate(sim=n,t=1:dim(res)[1])
   )
