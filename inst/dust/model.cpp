@@ -1343,7 +1343,7 @@ public:
       }
     }
     for (int i = 1; i <= shared->dim_hosp_inc; ++i) {
-      state_next[shared->offset_variable_hosp_inc + i - 1] = (fmodr<real_type>(step, (shared->incidence_steps_measurement * shared->steps_per_day)) == 0 ? odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12) : hosp_inc[i - 1] + odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12));
+      state_next[shared->offset_variable_hosp_inc + i - 1] = (fmodr<real_type>(step, (shared->incidence_steps_measurement * shared->steps_per_day)) == 1 ? odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12) : hosp_inc[i - 1] + odin_sum3<real_type>(internal.n_IH.data(), i - 1, i, 0, shared->dim_n_IH_2, 0, shared->dim_n_IH_3, shared->dim_n_IH_1, shared->dim_n_IH_12) + odin_sum3<real_type>(internal.n_IICU.data(), i - 1, i, 0, shared->dim_n_IICU_2, 0, shared->dim_n_IICU_3, shared->dim_n_IICU_1, shared->dim_n_IICU_12));
     }
     for (int i = 1; i <= shared->dim_tot_hosp_1; ++i) {
       for (int j = 1; j <= shared->dim_tot_hosp_2; ++j) {
@@ -1385,7 +1385,7 @@ public:
       }
     }
     for (int i = 1; i <= shared->dim_incidence; ++i) {
-      state_next[shared->offset_variable_incidence + i - 1] = (fmodr<real_type>(step, (shared->incidence_steps_measurement * shared->steps_per_day)) == 0 ? odin_sum3<real_type>(internal.n_SE.data(), 0, shared->dim_n_SE_1, 0, shared->dim_n_SE_2, i - 1, i, shared->dim_n_SE_1, shared->dim_n_SE_12) : incidence[i - 1] + odin_sum3<real_type>(internal.n_SE.data(), 0, shared->dim_n_SE_1, 0, shared->dim_n_SE_2, i - 1, i, shared->dim_n_SE_1, shared->dim_n_SE_12));
+      state_next[shared->offset_variable_incidence + i - 1] = (fmodr<real_type>(step, (shared->incidence_steps_measurement * shared->steps_per_day)) == 1 ? odin_sum3<real_type>(internal.n_SE.data(), 0, shared->dim_n_SE_1, 0, shared->dim_n_SE_2, i - 1, i, shared->dim_n_SE_1, shared->dim_n_SE_12) : incidence[i - 1] + odin_sum3<real_type>(internal.n_SE.data(), 0, shared->dim_n_SE_1, 0, shared->dim_n_SE_2, i - 1, i, shared->dim_n_SE_1, shared->dim_n_SE_12));
     }
     state_next[3] = odin_sum3<real_type>(internal.n_SE.data(), 0, shared->dim_n_SE_1, 0, shared->dim_n_SE_2, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12);
     for (int i = 1; i <= shared->dim_tot_infected_1; ++i) {
