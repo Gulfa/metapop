@@ -6,13 +6,6 @@
 #include <R_ext/Visibility.h>
 
 // model.cpp
-cpp11::sexp dust_model_capabilities();
-extern "C" SEXP _metapop_dust_model_capabilities() {
-  BEGIN_CPP11
-    return cpp11::as_sexp(dust_model_capabilities());
-  END_CPP11
-}
-// model.cpp
 cpp11::sexp dust_model_gpu_info();
 extern "C" SEXP _metapop_dust_model_gpu_info() {
   BEGIN_CPP11
@@ -24,6 +17,13 @@ SEXP dust_cpu_model_alloc(cpp11::list r_pars, bool pars_multi, cpp11::sexp r_tim
 extern "C" SEXP _metapop_dust_cpu_model_alloc(SEXP r_pars, SEXP pars_multi, SEXP r_time, SEXP r_n_particles, SEXP n_threads, SEXP r_seed, SEXP deterministic, SEXP gpu_config, SEXP ode_control) {
   BEGIN_CPP11
     return cpp11::as_sexp(dust_cpu_model_alloc(cpp11::as_cpp<cpp11::decay_t<cpp11::list>>(r_pars), cpp11::as_cpp<cpp11::decay_t<bool>>(pars_multi), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_time), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_n_particles), cpp11::as_cpp<cpp11::decay_t<int>>(n_threads), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(r_seed), cpp11::as_cpp<cpp11::decay_t<bool>>(deterministic), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(gpu_config), cpp11::as_cpp<cpp11::decay_t<cpp11::sexp>>(ode_control)));
+  END_CPP11
+}
+// model.cpp
+cpp11::sexp dust_cpu_model_capabilities();
+extern "C" SEXP _metapop_dust_cpu_model_capabilities() {
+  BEGIN_CPP11
+    return cpp11::as_sexp(dust_cpu_model_capabilities());
   END_CPP11
 }
 // model.cpp
@@ -152,6 +152,7 @@ extern "C" SEXP _metapop_dust_cpu_model_ode_statistics(SEXP ptr) {
 extern "C" {
 static const R_CallMethodDef CallEntries[] = {
     {"_metapop_dust_cpu_model_alloc",                   (DL_FUNC) &_metapop_dust_cpu_model_alloc,                   9},
+    {"_metapop_dust_cpu_model_capabilities",            (DL_FUNC) &_metapop_dust_cpu_model_capabilities,            0},
     {"_metapop_dust_cpu_model_compare_data",            (DL_FUNC) &_metapop_dust_cpu_model_compare_data,            1},
     {"_metapop_dust_cpu_model_filter",                  (DL_FUNC) &_metapop_dust_cpu_model_filter,                  5},
     {"_metapop_dust_cpu_model_n_state",                 (DL_FUNC) &_metapop_dust_cpu_model_n_state,                 1},
@@ -169,7 +170,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_metapop_dust_cpu_model_state",                   (DL_FUNC) &_metapop_dust_cpu_model_state,                   2},
     {"_metapop_dust_cpu_model_time",                    (DL_FUNC) &_metapop_dust_cpu_model_time,                    1},
     {"_metapop_dust_cpu_model_update_state",            (DL_FUNC) &_metapop_dust_cpu_model_update_state,            7},
-    {"_metapop_dust_model_capabilities",                (DL_FUNC) &_metapop_dust_model_capabilities,                0},
     {"_metapop_dust_model_gpu_info",                    (DL_FUNC) &_metapop_dust_model_gpu_info,                    0},
     {NULL, NULL, 0}
 };
