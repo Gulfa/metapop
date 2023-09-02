@@ -96,6 +96,17 @@ test_that("Conserve N", {
   
 })
 
+test_that("Both ways of calculating hosp inc are equivalaent", {
+  pars <- basic_params(L=300, N=2)
+  pars$beta_day <- pars$beta_day*2
+  pars <- change_dt(pars, 1/8)
+  results <- run_params(pars, L=100, 1, 1)
+  tot_hosps <- results %>% filter(time %% 1 == 0 ) %>%pull(tot_hosp)
+  est_incs <- tot_hosps[2:length(tot_hosps)] - tot_hosps[1:(length(tot_hosps)-1)]
+  expect_equal(est_incs, results %>% filter(time %% 1 == 0 & time > 0) %>%pull(tot_hosp_inc))
+
+})
+
 test_that("Random beta", {
   params <- basic_params()
   params$beta_mode <- 3

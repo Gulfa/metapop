@@ -25,7 +25,8 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
                          deterministic=deterministic
               )
  
-   if(!use_determinsitic_model){
+  
+  if(!use_determinsitic_model){
     params$dust_index <- dust_model$info()$index
     raw_results <- dust_model$simulate(1:(L/params$dt))
     if(!is.null(thin_before_refine)){
