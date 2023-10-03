@@ -52,9 +52,9 @@ add_per_age <- function(res, key, params, use_strain=TRUE, vac_index=NULL){
     if(!is.null(dim(vals))){
       vals <- rowSums(vals)
     }
-    #res <- cbind(res, vals)
-    #colnames(res)[ncol(res)] <- paste0(key, "_age_", i +1)
-    res[, paste0(key, "_age_", i +1)] <- vals
+    res <- cbind(res, vals)
+    colnames(res)[ncol(res)] <- paste0(key, "_age_", i +1)
+    #res[, paste0(key, "_age_", i +1)] <- vals
   }
   return(res)
 }
@@ -143,7 +143,7 @@ add_per_vac <- function(res, key, params, use_strain=TRUE){
 #' @export
 refine_results_odin <- function(res, params){
   d <- res
-  res <- data.table(res)
+  #res <- as.data.table(res)
   N <- nrow(res)
 
   n <- params$n_vac*params$n_strain*params$n
@@ -232,11 +232,12 @@ refine_results_odin <- function(res, params){
 #'
 #' @export
 refine_results_odin_minimal <- function(res, params){
-  d <- res
-  res <- data.table(res)
+  print("hei")
+  #res <- as.data.table(res)
   N <- nrow(res)
 
   n <- params$n_vac*params$n_strain*params$n
+  print(class(res))
   res <- cbind(res, tot_infected=rowSums(res[, paste0("tot_infected[",1:n,"]")]))
   if(!"time" %in% colnames(res)){
     res <- cbind(res, "time"=res[, "t"])
