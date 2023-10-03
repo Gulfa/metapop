@@ -52,8 +52,9 @@ add_per_age <- function(res, key, params, use_strain=TRUE, vac_index=NULL){
     if(!is.null(dim(vals))){
       vals <- rowSums(vals)
     }
-    res <- cbind(res, vals)
-    colnames(res)[ncol(res)] <- paste0(key, "_age_", i +1)
+    #res <- cbind(res, vals)
+    #colnames(res)[ncol(res)] <- paste0(key, "_age_", i +1)
+    res[, paste0(key, "_age_", i +1)] <- vals
   }
   return(res)
 }
@@ -142,7 +143,7 @@ add_per_vac <- function(res, key, params, use_strain=TRUE){
 #' @export
 refine_results_odin <- function(res, params){
   d <- res
-                                        #  res <- data.table(res)
+  res <- data.table(res)
   N <- nrow(res)
 
   n <- params$n_vac*params$n_strain*params$n
@@ -228,16 +229,51 @@ refine_results_odin <- function(res, params){
   return(data.table::data.table(res))
 }
 
+#'
+#' @export
+refine_results_odin_minimal <- function(res, params){
+  d <- res
+  res <- data.table(res)
+  N <- nrow(res)
+
+  n <- params$n_vac*params$n_strain*params$n
+  res <- cbind(res, tot_infected=rowSums(res[, paste0("tot_infected[",1:n,"]")]))
+  if(!"time" %in% colnames(res)){
+    res <- cbind(res, "time"=res[, "t"])
+  }
+  res <- add_per_age(res, "tot_infected", params)
+  res <- add_per_age(res, "tot_resp", params)
+  res <- add_per_age(res, "tot_hosp", params)
+  res <- add_per_age(res, "D", params)
+ 
+ 
+  res <- cbind(res, D=rowSums(res[, paste0("D[",1:n,"]")]))
+
+  res <- cbind(res, tot_hosp=rowSums(res[, paste0("tot_hosp[",1:n,"]")]))
+#  res <- cbind(res, tot_misc=rowSums(res[, paste0("tot_misc[",1:n,"]")]))
+  res <- cbind(res, tot_resp=rowSums(res[, paste0("tot_resp[",1:n,"]")]))
+  res <- cbind(res, ward=rowSums(res[, c(paste0("H[",1:n,"]"), paste0("ICU_P[",1:n,"]"), paste0("ICU_H[",1:n,"]"))]))
+  res <- cbind(res, hosp=rowSums(res[, c("ward", paste0("ICU_R[",1:n,"]"))]))
+  res <- cbind(res, resp=rowSums(res[, paste0("ICU_R[",1:n,"]")]))
+  if(! "incidence" %in% colnames(res)){
+    incidence <- c(res[2:N, "tot_infected"] - res[1:(N-1), "tot_infected"],0)
+    res <- cbind(res, incidence=incidence)
+  }
+  hosp_incidence <- c(res[2:N, "tot_hosp"] - res[1:(N-1), "tot_hosp"],0)
+  res <- cbind(res, hosp_incidence=hosp_incidence)
+  return(data.table::data.table(res))
+}
+
 
 #'
 #' @export
-refine_results_odin_dust <- function(res, params, N_threads){
+refine_results_odin_dust <- function(res, params, N_threads, type="normal"){
 
                                         #  refined <- lapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params, n, N_reg, N_age, N_wax))
   if(params$use_determinsitic_model){
-    refined <- refine_one_sim(res, params, 1)
+    refined <- refine_one_sim(res, params, 1, type=type)
   }else{
-  refined <- data.table::rbindlist(parallel::mclapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params,n),
+  refined <- data.table::rbindlist(parallel::mclapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params,n, type=type),
                                 mc.cores=N_threads))
   }
 ##  refined <- lapply(1:dim(res)[2], function(n)refine_one_sim(res[,n,], params,n))
@@ -301,7 +337,7 @@ fix_index_determinsitic <- function(raw_results){
   return(unlist(new_names))
 }
 
-refine_one_sim <- function(res, params,n){
+refine_one_sim <- function(res, params,n, type="normal"){
   if(!is.null(params$dust_index)){
     res <- t(res[1:dim(res)[1],])
     colnames(res) <- fix_index(params$dust_index)
@@ -309,7 +345,13 @@ refine_one_sim <- function(res, params,n){
     colnames(res) <- fix_index_determinsitic(res)
 
   }
+  if(type=="normal"){
   dt <- refine_results_odin(res,params)
+  }else if(type=="minimal"){
+    dt <- refine_results_odin_minimal(res,params)
+  }else{
+    stop("Unknown refine type")
+  }
   return(dt%>% dplyr::mutate(sim=n,t=1:dim(res)[1])
   )
 }
