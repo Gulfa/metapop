@@ -232,13 +232,11 @@ refine_results_odin <- function(res, params){
 #'
 #' @export
 refine_results_odin_minimal <- function(res, params){
-  print("hei")
-  #res <- as.data.table(res)
+   #res <- as.data.table(res)
   N <- nrow(res)
 
   n <- params$n_vac*params$n_strain*params$n
-  print(class(res))
-  res <- cbind(res, tot_infected=rowSums(res[, paste0("tot_infected[",1:n,"]")]))
+    res <- cbind(res, tot_infected=rowSums(res[, paste0("tot_infected[",1:n,"]")]))
   if(!"time" %in% colnames(res)){
     res <- cbind(res, "time"=res[, "t"])
   }
