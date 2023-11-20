@@ -293,7 +293,7 @@ test_that("Test 2 strains", {
   results <- run_params(params, L=100, 3, 3)
   N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(params$S_ini) + sum(params$I_ini))
   expect_true(N_t)
-  expect_gte(mean(results[t==100,get("tot_infected[10]")]), mean(results[t==100,get("tot_infected[1]")]))
+  expect_gte(mean(results[t==100,get("tot_infected_strain_2")]), mean(results[t==100,get("tot_infected_strain_1")]))
   
 })
 

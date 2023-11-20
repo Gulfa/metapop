@@ -52,7 +52,10 @@ dim(change_factor) <- 4
 dim(rand_beta_factors) <- n
 rand_beta_factors[] <- user()
 rand_beta_sd <- user(0.1)
-update(log_beta) <- if(step %% (rand_beta_days*steps_per_day)==0) log_beta + rnorm(0, rand_beta_sd) else (log_beta)
+log_beta_diff <- if(step %% (rand_beta_days*steps_per_day)==(rand_beta_days*steps_per_day)-1) rnorm(0, rand_beta_sd) else 0
+update(log_beta) <- log_beta + log_beta_diff
+update(log_beta_diff_hist) <- log_beta_diff
+
 
 ## Spontaneous behaviour change
 ## Here beta_day is treated as the "government policy" and the total effect is a combination 
@@ -108,7 +111,8 @@ beta[,] <- if(beta_mode==1) beta_day[step, i] else
              (if(beta_mode == 2) beta_thresh*rand_beta_factors[i] else
                 (if(beta_mode == 3) exp(log_beta)*rand_beta_factors[i] else
                   ( if(beta_mode==4)  beta_spont_behaviour[i,j] else
-                      ( if(beta_mode==5) beta_cut_peak*rand_beta_factors[i] else 0))))
+                      ( if(beta_mode==5) beta_cut_peak*rand_beta_factors[i] else 
+                        (if(beta_mode==6) beta_day[step,i]*exp(log_beta) else 0)))))
 
 ## Core equations for transitions between compartments:
 dim(n_vac_help) <- c(n, n_vac)
@@ -233,11 +237,12 @@ dim(incidence) <- n_strain
 ## HARD CODED 2 strains
 n_SE_tot[,] <- rbinom(S[i,j], sum(p_SE[i,j,]))
 rel_strain[,,] <- if(n_strain==1) 1 else (p_SE[i,j,k]/sum(p_SE[i,j,]))
-n_SE[,,] <- if(k==1 || n_strain==1) n_SE_tot[i,j] else
-           (if (n_strain==2) n_SE_tot[i,j] - n_SE[i,j,1] else (
-                if(k==2) rbinom(n_SE_tot[i,j] - n_SE[i,j,1], rel_strain[i,j,2]/(rel_strain[i,j,2] + rel_strain[i,j,3])) else(
-                                                                                if (k==3) n_SE_tot[i,j] - n_SE[i,j,2] - n_SE[i,j,1]
-                                                                                                                    else 0)))
+n_SE[,,] <- if(n_strain==1) n_SE_tot[i,j] else
+             (if (n_strain==2) if(k==1) rbinom(n_SE_tot[i,j], rel_strain[i,j,1]) else (n_SE_tot[i,j] - n_SE[i,j,1]) else 0)
+                #if()
+ #               if(k==2) rbinom(n_SE_tot[i,j] - n_SE[i,j,1], rel_strain[i,j,2]/(rel_strain[i,j,2] + rel_strain[i,j,3])) else(
+  #                                                                              if (k==3) n_SE_tot[i,j] - n_SE[i,j,2] - n_SE[i,j,1]
+   #                                                                                                                 else 0)))
 
 n_RI[,,] <- if( n_strain==1) 0 else
              (if (k==1) rbinom(R[i,j,1], 1 - exp(-sum(lambda_ij[i,j,,,1])*cross_protection[1,2]*symp_asymp_effect[i,j,k]* dt)) else (if (k==2)  rbinom(R[i,j,2], 1 - exp(-sum(lambda_ij[i,j,,,1])*cross_protection[2,1]*symp_asymp_effect[i,j,k] * dt)) else 0))
@@ -408,7 +413,9 @@ lambda_ij[,,,,] <- beta[i,j]*beta_strain[i5] * mixing_matrix[i,k]/beta_norm[i]*t
 ## mig_R[,] <- migration_matrix[i,j]*R[j]/reg_pop_long[j]
 
 ## Initial states:
+
 initial(log_beta) <- log_beta_ini
+initial(log_beta_diff_hist) <- 0
 initial(beta_thresh) <- threshold_ini
 initial(S[,]) <- S_ini[i,j] # will be user-defined
 initial(Ea[,,]) <-  Ea_ini[i,j,k]
