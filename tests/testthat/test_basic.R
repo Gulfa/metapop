@@ -139,6 +139,28 @@ test_that("Test vaccinaion implemenation", {
   
 })
 
+test_that("Test vaccinaion implemenation, vax_type=2", {
+  pars <- basic_params(N=1, n_vac=3)
+
+  pars$vax_type <- 2
+  pars$beta_day <- pars$beta_day*0
+  vax <- array(0,dim=c(100, 1, 3))
+  vax[5,,1] <- 2e5
+  pars$vaccinations <- vax
+  results <- run_params(pars, L=100, 1, 1)
+
+  results[1:7, "S[1]"]
+  results[1:7, "S[2]"]
+
+  N_t <- all(results %>% dplyr::filter(t!=1) %>% dplyr::pull(tot_N) == sum(pars$S_ini) + sum(pars$I_ini))
+  expect_true(N_t)
+
+  expect_true(results[t==6, get("S[1]")]==0)
+  expect_true(results[t==6, get("S[2]")]==0)
+  expect_true(results[t==6, get("S[3]")]==3e5)
+
+})
+
 test_that("Test simple waning from R", {
   params <- basic_params(N=2, n_vac=1)
   params$R_ini[1:2,1,1] <- 1e5

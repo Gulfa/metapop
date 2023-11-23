@@ -1144,11 +1144,11 @@ public:
     }
     for (int i = 1; i <= shared->dim_n_vac_help_1; ++i) {
       int j = 1;
-      internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = (shared->vax_type == 1 ? 0 : (dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1], S[shared->dim_S_1 * 0 + i - 1] / (real_type) odin_sum2<real_type>(S, i - 1, i, 0, shared->dim_S_2, shared->dim_S_1))));
+      internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = (shared->vax_type == 1 || shared->n_vac == 0 ? 0 : (dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1], S[shared->dim_S_1 * 0 + i - 1] / (real_type) odin_sum2<real_type>(S, i - 1, i, 0, shared->n_vac - 1, shared->dim_S_1))));
     }
     for (int i = 1; i <= shared->dim_n_vac_help_1; ++i) {
       for (int j = 2; j <= shared->n_vac; ++j) {
-        internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = (shared->vax_type == 1 ? 0 : (dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1] - odin_sum2<real_type>(internal.n_vac_help.data(), i - 1, i, 0, j - 1, shared->dim_n_vac_help_1), S[shared->dim_S_1 * (j - 1) + i - 1] / (real_type) odin_sum2<real_type>(S, i - 1, i, j - 1, shared->n_vac, shared->dim_S_1))));
+        internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = (shared->vax_type == 1 || shared->n_vac == 0 || j == shared->n_vac ? 0 : (dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1] - odin_sum2<real_type>(internal.n_vac_help.data(), i - 1, i, 0, j - 1, shared->dim_n_vac_help_1), S[shared->dim_S_1 * (j - 1) + i - 1] / (real_type) odin_sum2<real_type>(S, i - 1, i, j - 1, shared->n_vac - 1, shared->dim_S_1))));
       }
     }
     for (int i = 1; i <= shared->dim_A_1; ++i) {
