@@ -39,6 +39,7 @@ __host__ __device__ T odin_sign(T x) {
 // [[dust::time_type(discrete)]]
 // [[dust::param(I_ini, has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(N_steps, has_default = FALSE, default_value = NULL, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(S_div_vac, has_default = FALSE, default_value = NULL, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(S_ini, has_default = FALSE, default_value = NULL, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(T_waning, has_default = FALSE, default_value = NULL, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(asympt_frac, has_default = FALSE, default_value = NULL, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
@@ -111,6 +112,7 @@ __host__ __device__ T odin_sign(T x) {
 // [[dust::param(tot_resp_ini, has_default = TRUE, default_value = 0L, rank = 3, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(tot_vac_adm_ini, has_default = TRUE, default_value = 0L, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(tot_vac_ini, has_default = TRUE, default_value = 0L, rank = 2, min = -Inf, max = Inf, integer = FALSE)]]
+// [[dust::param(use_dynamic_div, has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(vac_struct_length, has_default = TRUE, default_value = 0L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(vax_type, has_default = TRUE, default_value = 1L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
 // [[dust::param(waning_immunity, has_default = TRUE, default_value = 10000L, rank = 0, min = -Inf, max = Inf, integer = FALSE)]]
@@ -136,6 +138,7 @@ public:
     int N_steps;
     std::vector<real_type> P_ini;
     std::vector<real_type> R_ini;
+    std::vector<real_type> S_div_vac;
     std::vector<real_type> S_ini;
     std::vector<real_type> T_waning;
     std::vector<real_type> asympt_frac;
@@ -308,6 +311,9 @@ public:
     int dim_S;
     int dim_S_1;
     int dim_S_2;
+    int dim_S_div_vac;
+    int dim_S_div_vac_1;
+    int dim_S_div_vac_2;
     int dim_S_ini;
     int dim_S_ini_1;
     int dim_S_ini_2;
@@ -661,6 +667,9 @@ public:
     int dim_sympt_frac_2;
     int dim_sympt_frac_3;
     int dim_threshold;
+    int dim_tmp_div_vac;
+    int dim_tmp_div_vac_1;
+    int dim_tmp_div_vac_2;
     int dim_tot_hosp;
     int dim_tot_hosp_1;
     int dim_tot_hosp_12;
@@ -853,6 +862,7 @@ public:
     std::vector<real_type> tot_vac_adm_ini;
     std::vector<real_type> tot_vac_ini;
     std::vector<real_type> transmisibility;
+    real_type use_dynamic_div;
     real_type vac_struct_length;
     std::vector<real_type> vaccinations;
     real_type vax_type;
@@ -902,6 +912,7 @@ public:
     std::vector<real_type> n_waning_tmp;
     std::vector<real_type> p_SE;
     std::vector<real_type> rel_strain;
+    std::vector<real_type> tmp_div_vac;
     std::vector<real_type> vax_time_step;
     std::vector<real_type> waning_tmp;
   };
@@ -1083,6 +1094,11 @@ public:
       }
     }
     real_type r = shared->threshold[0] - current_tot_in_hosp;
+    for (int i = 1; i <= shared->dim_tmp_div_vac_1; ++i) {
+      for (int j = 1; j <= shared->dim_tmp_div_vac_2; ++j) {
+        internal.tmp_div_vac[i - 1 + shared->dim_tmp_div_vac_1 * (j - 1)] = (shared->use_dynamic_div == 1 ? S[shared->dim_S_1 * (j - 1) + i - 1] : (shared->S_div_vac[shared->dim_S_div_vac_1 * (j - 1) + i - 1]));
+      }
+    }
     state_next[2] = (current_tot_in_hosp > shared->threshold[1] ? 1 : trigger);
     for (int i = 1; i <= shared->dim_vax_time_step_1; ++i) {
       for (int j = 1; j <= shared->dim_vax_time_step_2; ++j) {
@@ -1144,11 +1160,11 @@ public:
     }
     for (int i = 1; i <= shared->dim_n_vac_help_1; ++i) {
       int j = 1;
-      internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = (shared->vax_type == 1 || shared->n_vac == 0 ? 0 : (dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1], S[shared->dim_S_1 * 0 + i - 1] / (real_type) odin_sum2<real_type>(S, i - 1, i, 0, shared->n_vac - 1, shared->dim_S_1))));
+      internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = (shared->vax_type == 1 || shared->n_vac == 0 ? 0 : (dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1], internal.tmp_div_vac[shared->dim_tmp_div_vac_1 * 0 + i - 1] / (real_type) odin_sum2<real_type>(internal.tmp_div_vac.data(), i - 1, i, 0, shared->dim_tmp_div_vac_2, shared->dim_tmp_div_vac_1))));
     }
     for (int i = 1; i <= shared->dim_n_vac_help_1; ++i) {
       for (int j = 2; j <= shared->n_vac; ++j) {
-        internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = (shared->vax_type == 1 || shared->n_vac == 0 || j == shared->n_vac ? 0 : (dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1] - odin_sum2<real_type>(internal.n_vac_help.data(), i - 1, i, 0, j - 1, shared->dim_n_vac_help_1), S[shared->dim_S_1 * (j - 1) + i - 1] / (real_type) odin_sum2<real_type>(S, i - 1, i, j - 1, shared->n_vac - 1, shared->dim_S_1))));
+        internal.n_vac_help[i - 1 + shared->dim_n_vac_help_1 * (j - 1)] = (shared->vax_type == 1 || shared->n_vac == 0 || j == shared->n_vac ? 0 : ((internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1] - odin_sum2<real_type>(internal.n_vac_help.data(), i - 1, i, 0, j - 1, shared->dim_n_vac_help_1) > 0 ? dust::random::binomial<real_type>(rng_state, internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1] - odin_sum2<real_type>(internal.n_vac_help.data(), i - 1, i, 0, j - 1, shared->dim_n_vac_help_1), internal.tmp_div_vac[shared->dim_tmp_div_vac_1 * (j - 1) + i - 1] / (real_type) odin_sum2<real_type>(internal.tmp_div_vac.data(), i - 1, i, j - 1, shared->n_vac, shared->dim_tmp_div_vac_1)) : (0))));
       }
     }
     for (int i = 1; i <= shared->dim_A_1; ++i) {
@@ -1383,7 +1399,7 @@ public:
     }
     for (int i = 1; i <= shared->dim_n_vac_now_1; ++i) {
       for (int j = 1; j <= shared->dim_n_vac_now_2; ++j) {
-        internal.n_vac_now[i - 1 + shared->dim_n_vac_now_1 * (j - 1)] = (shared->vax_type == 1 ? (- internal.vax_time_step[shared->dim_vax_time_step_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) > S[shared->dim_S_1 * (j - 1) + i - 1] ? - S[shared->dim_S_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) : dust::math::round(internal.vax_time_step[shared->dim_vax_time_step_1 * (j - 1) + i - 1] * S[shared->dim_S_1 * 0 + i - 1] / (real_type) N[shared->dim_N_1 * 0 + i - 1])) : ((j != shared->n_vac ? (internal.n_vac_help[shared->dim_n_vac_help_1 * (j - 1) + i - 1] > S[shared->dim_S_1 * (j - 1) + i - 1] ? - S[shared->dim_S_1 * (j - 1) + i - 1] : (- internal.n_vac_help[shared->dim_n_vac_help_1 * (j - 1) + i - 1])) : (internal.vax_time_step[shared->dim_vax_time_step_1 * 0 + i - 1] - internal.n_vac_help[shared->dim_n_vac_help_1 * (j - 1) + i - 1]))));
+        internal.n_vac_now[i - 1 + shared->dim_n_vac_now_1 * (j - 1)] = (shared->vax_type == 1 ? (- internal.vax_time_step[shared->dim_vax_time_step_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) > S[shared->dim_S_1 * (j - 1) + i - 1] ? - S[shared->dim_S_1 * (j - 1) + i - 1] + odin_sum3<real_type>(internal.n_SE.data(), i - 1, i, j - 1, j, 0, shared->dim_n_SE_3, shared->dim_n_SE_1, shared->dim_n_SE_12) : dust::math::round(internal.vax_time_step[shared->dim_vax_time_step_1 * (j - 1) + i - 1] * S[shared->dim_S_1 * 0 + i - 1] / (real_type) N[shared->dim_N_1 * 0 + i - 1])) : ((j != shared->n_vac ? (internal.n_vac_help[shared->dim_n_vac_help_1 * (j - 1) + i - 1] > S[shared->dim_S_1 * (j - 1) + i - 1] ? - S[shared->dim_S_1 * (j - 1) + i - 1] : (- internal.n_vac_help[shared->dim_n_vac_help_1 * (j - 1) + i - 1])) : (- odin_sum2<real_type>(internal.n_vac_now.data(), i - 1, i, 0, shared->n_vac - 1, shared->dim_n_vac_now_1)))));
       }
     }
     for (int i = 1; i <= shared->dim_n_waning_tmp_1; ++i) {
@@ -1788,6 +1804,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->threshold_ini = static_cast<real_type>(0.10000000000000001);
   shared->threshold_max = static_cast<real_type>(0.20000000000000001);
   shared->threshold_min = static_cast<real_type>(0.050000000000000003);
+  shared->use_dynamic_div = 0;
   shared->vac_struct_length = 0;
   shared->vax_type = 1;
   shared->waning_immunity = 10000;
@@ -1813,6 +1830,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->time_before_death = user_get_scalar<real_type>(user, "time_before_death", shared->time_before_death, NA_REAL, NA_REAL);
   shared->time_before_death_hosp = user_get_scalar<real_type>(user, "time_before_death_hosp", shared->time_before_death_hosp, NA_REAL, NA_REAL);
   shared->time_before_death_icu = user_get_scalar<real_type>(user, "time_before_death_icu", shared->time_before_death_icu, NA_REAL, NA_REAL);
+  shared->use_dynamic_div = user_get_scalar<real_type>(user, "use_dynamic_div", shared->use_dynamic_div, NA_REAL, NA_REAL);
   shared->vac_struct_length = user_get_scalar<real_type>(user, "vac_struct_length", shared->vac_struct_length, NA_REAL, NA_REAL);
   shared->vax_type = user_get_scalar<real_type>(user, "vax_type", shared->vax_type, NA_REAL, NA_REAL);
   shared->waning_immunity = user_get_scalar<real_type>(user, "waning_immunity", shared->waning_immunity, NA_REAL, NA_REAL);
@@ -1916,6 +1934,8 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_R_ini_3 = shared->n_strain;
   shared->dim_S_1 = shared->n;
   shared->dim_S_2 = shared->n_vac;
+  shared->dim_S_div_vac_1 = shared->n;
+  shared->dim_S_div_vac_2 = shared->n_vac;
   shared->dim_S_ini_1 = shared->n;
   shared->dim_S_ini_2 = shared->n_vac;
   shared->dim_T_waning_1 = shared->n;
@@ -2131,6 +2151,8 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_sympt_frac_1 = shared->n;
   shared->dim_sympt_frac_2 = shared->n_vac;
   shared->dim_sympt_frac_3 = shared->n_strain;
+  shared->dim_tmp_div_vac_1 = shared->n;
+  shared->dim_tmp_div_vac_2 = shared->n_vac;
   shared->dim_tot_hosp_1 = shared->n;
   shared->dim_tot_hosp_2 = shared->n_vac;
   shared->dim_tot_hosp_3 = shared->n_strain;
@@ -2252,6 +2274,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_R_ini = shared->dim_R_ini_1 * shared->dim_R_ini_2 * shared->dim_R_ini_3;
   shared->dim_R_ini_12 = shared->dim_R_ini_1 * shared->dim_R_ini_2;
   shared->dim_S = shared->dim_S_1 * shared->dim_S_2;
+  shared->dim_S_div_vac = shared->dim_S_div_vac_1 * shared->dim_S_div_vac_2;
   shared->dim_S_ini = shared->dim_S_ini_1 * shared->dim_S_ini_2;
   shared->dim_T_waning = shared->dim_T_waning_1 * shared->dim_T_waning_2;
   shared->dim_asympt_frac = shared->dim_asympt_frac_1 * shared->dim_asympt_frac_2 * shared->dim_asympt_frac_3;
@@ -2386,6 +2409,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->dim_symp_trans_12 = shared->dim_symp_trans_1 * shared->dim_symp_trans_2;
   shared->dim_sympt_frac = shared->dim_sympt_frac_1 * shared->dim_sympt_frac_2 * shared->dim_sympt_frac_3;
   shared->dim_sympt_frac_12 = shared->dim_sympt_frac_1 * shared->dim_sympt_frac_2;
+  shared->dim_tmp_div_vac = shared->dim_tmp_div_vac_1 * shared->dim_tmp_div_vac_2;
   shared->dim_tot_hosp = shared->dim_tot_hosp_1 * shared->dim_tot_hosp_2 * shared->dim_tot_hosp_3;
   shared->dim_tot_hosp_12 = shared->dim_tot_hosp_1 * shared->dim_tot_hosp_2;
   shared->dim_tot_hosp_ini = shared->dim_tot_hosp_ini_1 * shared->dim_tot_hosp_ini_2 * shared->dim_tot_hosp_ini_3;
@@ -2439,6 +2463,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->I_ini = user_get_array_fixed<real_type, 3>(user, "I_ini", shared->I_ini, {shared->dim_I_ini_1, shared->dim_I_ini_2, shared->dim_I_ini_3}, NA_REAL, NA_REAL);
   shared->P_ini = user_get_array_fixed<real_type, 3>(user, "P_ini", shared->P_ini, {shared->dim_P_ini_1, shared->dim_P_ini_2, shared->dim_P_ini_3}, NA_REAL, NA_REAL);
   shared->R_ini = user_get_array_fixed<real_type, 3>(user, "R_ini", shared->R_ini, {shared->dim_R_ini_1, shared->dim_R_ini_2, shared->dim_R_ini_3}, NA_REAL, NA_REAL);
+  shared->S_div_vac = user_get_array_fixed<real_type, 2>(user, "S_div_vac", shared->S_div_vac, {shared->dim_S_div_vac_1, shared->dim_S_div_vac_2}, NA_REAL, NA_REAL);
   shared->S_ini = user_get_array_fixed<real_type, 2>(user, "S_ini", shared->S_ini, {shared->dim_S_ini_1, shared->dim_S_ini_2}, NA_REAL, NA_REAL);
   shared->T_waning = user_get_array_fixed<real_type, 2>(user, "T_waning", shared->T_waning, {shared->dim_T_waning_1, shared->dim_T_waning_2}, NA_REAL, NA_REAL);
   internal.N_imp = std::vector<real_type>(shared->dim_N_imp);
@@ -2517,6 +2542,7 @@ dust::pars_type<model> dust_pars<model>(cpp11::list user) {
   shared->pa = std::vector<real_type>(shared->dim_pa);
   internal.rel_strain = std::vector<real_type>(shared->dim_rel_strain);
   shared->symp_asymp_effect = std::vector<real_type>(shared->dim_symp_asymp_effect);
+  internal.tmp_div_vac = std::vector<real_type>(shared->dim_tmp_div_vac);
   internal.vax_time_step = std::vector<real_type>(shared->dim_vax_time_step);
   internal.waning_tmp = std::vector<real_type>(shared->dim_waning_tmp);
   shared->asympt_frac = user_get_array_fixed<real_type, 3>(user, "asympt_frac", shared->asympt_frac, {shared->dim_asympt_frac_1, shared->dim_asympt_frac_2, shared->dim_asympt_frac_3}, NA_REAL, NA_REAL);
