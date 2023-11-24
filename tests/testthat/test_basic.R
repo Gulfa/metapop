@@ -162,6 +162,24 @@ test_that("Test vaccinaion implemenation, vax_type=2", {
   expect_lte(results[t==31, get("S[2]")], 500)
   expect_gte(results[t==31, get("S[3]")],3e5-500)
 
+  pars <- basic_params(N=1, n_vac=4)
+  pars$vac_struct_length=2
+  pars$S_div_vac <- array(c(1,0,0,0), dim=c(1,4))
+  pars$vax_type <- 2
+  pars$beta_day <- pars$beta_day*0
+
+  vax <- array(0,dim=c(100, 1, 4))
+  vax[3,,1] <- 1e5
+  pars$vaccinations <- vax
+  results <- run_params(pars, L=10, 1, 1)
+
+
+  expect_equal(as.numeric(results[t==5, "S[2]"]), 2e5)
+  expect_equal(as.numeric(results[t==5, "S[1]"]), 0)
+  expect_equal(as.numeric(results[t==5, "S[3]"]), 1e5)
+  expect_equal(as.numeric(results[t==5, "S[4]"]),1e5)
+
+
 })
 
 test_that("Test simple waning from R", {

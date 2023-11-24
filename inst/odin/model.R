@@ -123,15 +123,18 @@ use_dynamic_div <- user(0)
 dim(tmp_div_vac) <- c(n, n_vac)
 tmp_div_vac[,] <- if(use_dynamic_div==1) S[i,j] else (S_div_vac[i,j])
 
-n_vac_help[,1] <- if(vax_type ==1 || n_vac==0) 0 else (rbinom(vax_time_step[i,1], tmp_div_vac[i,1]/sum(tmp_div_vac[i,])))
+n_vac_help[,1] <- if(vax_type ==1 || n_vac==1) 0 else (rbinom(vax_time_step[i,1], tmp_div_vac[i,1]/sum(tmp_div_vac[i,])))
 vax_type <- user(1)
-n_vac_help[,2:n_vac] <- if(vax_type==1 || n_vac==0 || j==n_vac) 0 else (
-      if(vax_time_step[i,1] - sum(n_vac_help[i, 1:(j - 1)]) > 0) rbinom(vax_time_step[i,1] - sum(n_vac_help[i, 1:(j - 1)]), tmp_div_vac[i,j]/sum(tmp_div_vac[i,j:n_vac])) else(
+n_vac_help[,2:n_vac] <- if(vax_type==1 || n_vac==1 || j==n_vac) 0 else (
+      if(vax_time_step[i,1] - sum(n_vac_help[i, 1:(j - 1)]) > 0 && j <=vac_struct_length) rbinom(vax_time_step[i,1] - sum(n_vac_help[i, 1:(j - 1)]), tmp_div_vac[i,j]/sum(tmp_div_vac[i,j:n_vac])) else(
         0
       ))
 
 n_vac_now[,] <- if(vax_type==1) if (-vax_time_step[i,j] + sum(n_SE[i,j,])  > S[i,j]) - S[i,j] +  sum(n_SE[i,j,])  else round(vax_time_step[i,j]*S[i,1]/N[i,1]) else(
-  if(j!=n_vac) if(n_vac_help[i,j] > S[i,j]- sum(n_SE[i,j,]) ) -(S[i,j]- sum(n_SE[i,j,]))  else (-n_vac_help[i,j]) else (-sum(n_vac_now[i,1:(n_vac-1)])))
+  if(j<vac_struct_length) if(n_vac_help[i,j] > S[i,j]- sum(n_SE[i,j,]) ) -(S[i,j]- sum(n_SE[i,j,]))  else (-n_vac_help[i,j]) else (if(j==vac_struct_length) -sum(n_vac_now[i,1:(vac_struct_length-1)]) else( 0)))
+initial(tmp[,]) <- 0
+update(tmp[,]) <- n_vac_help[i,j]
+dim(tmp) <- c(n,n_vac)
 initial(sum_vac[]) <-0
 dim(sum_vac) <- n_vac
 update(sum_vac[]) <- sum(n_vac_now[,i])
