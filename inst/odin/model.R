@@ -131,7 +131,7 @@ n_vac_help[,2:n_vac] <- if(vax_type==1 || n_vac==0 || j==n_vac) 0 else (
       ))
 
 n_vac_now[,] <- if(vax_type==1) if (-vax_time_step[i,j] + sum(n_SE[i,j,])  > S[i,j]) - S[i,j] +  sum(n_SE[i,j,])  else round(vax_time_step[i,j]*S[i,1]/N[i,1]) else(
-  if(j!=n_vac) if(n_vac_help[i,j] > S[i,j]) -S[i,j] else (-n_vac_help[i,j]) else (-sum(n_vac_now[i,1:(n_vac-1)])))
+  if(j!=n_vac) if(n_vac_help[i,j] > S[i,j]- sum(n_SE[i,j,]) ) -(S[i,j]- sum(n_SE[i,j,]))  else (-n_vac_help[i,j]) else (-sum(n_vac_now[i,1:(n_vac-1)])))
 initial(sum_vac[]) <-0
 dim(sum_vac) <- n_vac
 update(sum_vac[]) <- sum(n_vac_now[,i])
