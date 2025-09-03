@@ -10,7 +10,7 @@ NULL
 #' The number of particles gives the number of samples and threads the number of cores used to sample
 #' @export
 run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1", run_params=list(), silent=TRUE, estimate_Rt=FALSE,Rt_per_day=1,
-                       return_summary_function=NULL, deterministic=FALSE, thin_before_refine=NULL, use_determinsitic_model=FALSE, refine_type="normal"){
+                       return_summary_function=NULL, deterministic=FALSE, thin_before_refine=NULL, use_determinsitic_model=FALSE, refine_type="normal",...){
   params <- fix_beta_mode_params(params)
   params <- fix_init_params(params)
   params$use_determinsitic_model <- use_determinsitic_model
@@ -38,7 +38,7 @@ run_params <- function(params, L=200, N_particles=1, N_threads=1, run_name="run1
   
     params[["unused_user_action"]] <- FALSE
     odin_model <- do.call(metapopdeterministic::model_deterministic$new,params)
-    raw_results <- odin_model$run(1:L, maxsteps=15000) 
+    raw_results <- odin_model$run(1:L, ...) 
     
   }
   
